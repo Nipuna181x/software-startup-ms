@@ -3,7 +3,9 @@
 namespace App\Models\Calling;
 
 use App\Concerns\BelongsToOrganization;
+use App\Enums\Calling\CallOutcome;
 use App\Support\PhoneNumber;
+use Carbon\CarbonInterface;
 use Database\Factories\Calling\BusinessFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -30,6 +32,7 @@ use Illuminate\Support\Carbon;
  * @property-read CallBusinessType $type
  * @property-read Collection<int, BusinessPhone> $phones
  * @property-read Collection<int, BusinessScreenshot> $screenshots
+ * @property-read Collection<int, Call> $calls
  * @property-read BusinessPhone|null $primaryPhone
  */
 #[Fillable(['organization_id', 'call_business_type_id', 'name', 'address', 'owner_name', 'website', 'notes'])]
@@ -78,6 +81,74 @@ class Business extends Model
     public function screenshots(): HasMany
     {
         return $this->hasMany(BusinessScreenshot::class);
+    }
+
+    /**
+     * Get every call attempt against this business, newest first.
+     *
+     * @return HasMany<Call, $this>
+     */
+    public function calls(): HasMany
+    {
+        return $this->hasMany(Call::class)->latest('called_at');
+    }
+
+    /**
+     * Get this business's most recent answered call, if any.
+     *
+     * The business's current status comes from this call's outcome. A
+     * business with only "not answered" attempts has no current status and
+     * belongs in the "To Call" list.
+     *
+     * @return HasOne<Call, $this>
+     */
+    public function latestAnsweredCall(): HasOne
+    {
+        $answeredValues = array_map(fn (CallOutcome $outcome) => $outcome->value, CallOutcome::answeredOutcomes());
+
+        return $this->hasOne(Call::class)->ofMany(
+            ['called_at' => 'max', 'id' => 'max'],
+            fn ($query) => $query->whereIn('outcome', $answeredValues),
+        );
+    }
+
+    /**
+     * Get this business's current status, derived from its latest answered
+     * call. Null means the business has never been answered.
+     */
+    public function currentStatus(): ?CallOutcome
+    {
+        return $this->latestAnsweredCall?->outcome;
+    }
+
+    /**
+     * Determine whether this business has ever been answered.
+     */
+    public function hasBeenAnswered(): bool
+    {
+        return $this->currentStatus() !== null;
+    }
+
+    /**
+     * Count how many unanswered attempts have been made since the business
+     * was last answered (or ever, if it has never been answered).
+     */
+    public function attemptsSinceLastAnswer(): int
+    {
+        $lastAnsweredAt = $this->latestAnsweredCall?->called_at;
+
+        return $this->calls()
+            ->where('outcome', CallOutcome::NotAnswered)
+            ->when($lastAnsweredAt, fn ($query) => $query->where('called_at', '>', $lastAnsweredAt))
+            ->count();
+    }
+
+    /**
+     * Get the time of the most recent call attempt, of any outcome.
+     */
+    public function lastAttemptAt(): ?CarbonInterface
+    {
+        return $this->calls()->first()?->called_at;
     }
 
     /**
