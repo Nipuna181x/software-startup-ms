@@ -11,3 +11,4 @@ never from `main` (except the first).
   palette with opacity tiers, soft radii and restrained motion.
 
 - `feature/03-workspace-redesign` (based on `feature/02-ui-redesign`): reference-inspired public website, workspace UI, new identity and platform administration.
+- `feature/04-calling-categories` (based on `feature/03-workspace-redesign`): Calling module part 1 — call categories and business types (tables, policies, CRUD pages, sidebar entry).
