@@ -4,7 +4,7 @@
 <body class="bg-white text-zinc-950 antialiased">
     <a href="#main-content" class="skip-link">Skip to content</a>
     <div class="w-full overflow-clip bg-white">
-        <div class="m-2 rounded-lg bg-lime px-4 py-2.5 text-center text-xs font-medium sm:text-sm">Big ideas. Clear plans. Better teamwork. <a href="#features" class="ml-2 inline-flex items-center gap-1 underline underline-offset-4">Meet Startsuite <flux:icon icon="arrow-up-right" class="size-4 shrink-0" aria-hidden="true" /></a></div>
+        <div class="announcement-strip bg-lime px-4 py-3 text-center text-xs font-medium sm:text-sm">Big ideas. Clear plans. Better teamwork. <a href="#features" class="ml-2 inline-flex items-center gap-1 underline underline-offset-4">Meet Startsuite <flux:icon icon="arrow-up-right" class="size-4 shrink-0" aria-hidden="true" /></a></div>
         <header x-data="{ open: false }" class="relative z-30 mx-auto max-w-7xl border-b border-zinc-100 px-5 sm:px-10">
             <div class="flex h-22 items-center justify-between gap-4">
                 <a href="{{ route('home') }}" wire:navigate aria-label="Startsuite home"><x-wordmark /></a>
