@@ -75,6 +75,11 @@ return [
     |
     */
 
+    'platform_admin' => [
+        'email' => env('PLATFORM_ADMIN_EMAIL', 'admin@startsuite.test'),
+        'password' => env('PLATFORM_ADMIN_PASSWORD'),
+    ],
+
     'demo' => [
         'organization' => env('DEMO_ORGANIZATION', 'Northwind Logistics'),
         'slug' => env('DEMO_ORGANIZATION_SLUG', 'northwind-logistics'),

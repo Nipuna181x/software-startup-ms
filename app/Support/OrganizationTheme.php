@@ -49,7 +49,7 @@ class OrganizationTheme
         }
 
         $this->resolved = true;
-        $this->organization = Auth::user()?->organization;
+        $this->organization = Auth::guard('web')->user()?->organization;
 
         if ($this->organization === null) {
             return;

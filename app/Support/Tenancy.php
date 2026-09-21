@@ -42,7 +42,7 @@ class Tenancy
         self::$resolvingUser = true;
 
         try {
-            return Auth::user()?->organization_id;
+            return Auth::guard('web')->user()?->organization_id;
         } finally {
             self::$resolvingUser = false;
         }
