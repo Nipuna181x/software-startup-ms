@@ -1,5 +1,7 @@
 <?php
 
+use App\Concerns\Calling\LogsCalls;
+use App\Enums\Calling\CallOutcome;
 use App\Models\Calling\Business;
 use App\Models\Calling\CallBusinessType;
 use App\Models\Calling\CallCategory;
@@ -13,7 +15,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 
 new class extends Component {
-    use WithFileUploads;
+    use LogsCalls, WithFileUploads;
 
     public CallCategory $category;
 
@@ -21,6 +23,9 @@ new class extends Component {
 
     #[Url(as: 'q', except: '')]
     public string $search = '';
+
+    #[Url(as: 'status', except: '')]
+    public string $statusFilter = '';
 
     public ?int $editingId = null;
 
@@ -70,13 +75,13 @@ new class extends Component {
     }
 
     /**
-     * Get this business type's businesses, filtered by the search term.
+     * Get every business of this type, with the data needed to derive status.
      */
     #[Computed]
-    public function businesses(): \Illuminate\Database\Eloquent\Collection
+    public function allBusinesses(): \Illuminate\Database\Eloquent\Collection
     {
         return $this->type->businesses()
-            ->with(['phones' => fn ($query) => $query->orderByDesc('is_primary')])
+            ->with(['phones' => fn ($query) => $query->orderByDesc('is_primary'), 'calls'])
             ->when($this->search !== '', function ($query): void {
                 $term = '%'.$this->search.'%';
                 $normalizedSearch = PhoneNumber::normalize($this->search);
@@ -93,6 +98,69 @@ new class extends Component {
             })
             ->latest()
             ->get();
+    }
+
+    /**
+     * Get businesses that have never been answered, most recent attempt first.
+     */
+    #[Computed]
+    public function toCallBusinesses(): \Illuminate\Support\Collection
+    {
+        return $this->allBusinesses
+            ->reject(fn (Business $business): bool => $business->hasBeenAnswered())
+            ->sortByDesc(fn (Business $business) => $business->lastAttemptAt())
+            ->values();
+    }
+
+    /**
+     * Get businesses that have been answered, filtered by status if selected.
+     */
+    #[Computed]
+    public function answeredBusinesses(): \Illuminate\Support\Collection
+    {
+        return $this->allBusinesses
+            ->filter(fn (Business $business): bool => $business->hasBeenAnswered())
+            ->when($this->statusFilter !== '', fn ($collection) => $collection->filter(
+                fn (Business $business): bool => $business->currentStatus()?->value === $this->statusFilter,
+            ))
+            ->values();
+    }
+
+    /**
+     * Get the counts shown at the top of the page.
+     *
+     * @return array{toCall: int, pending: int, interested: int, rejected: int}
+     */
+    #[Computed]
+    public function counts(): array
+    {
+        $answered = $this->allBusinesses->filter(fn (Business $business): bool => $business->hasBeenAnswered());
+
+        return [
+            'toCall' => $this->allBusinesses->count() - $answered->count(),
+            'pending' => $answered->filter(fn (Business $b) => $b->currentStatus() === CallOutcome::Pending)->count(),
+            'interested' => $answered->filter(fn (Business $b) => $b->currentStatus() === CallOutcome::Interested)->count(),
+            'rejected' => $answered->filter(fn (Business $b) => $b->currentStatus() === CallOutcome::Rejected)->count(),
+        ];
+    }
+
+    /**
+     * Get the answered status options for the filter and the outcome form.
+     *
+     * @return array<int, array{value: string, label: string}>
+     */
+    #[Computed]
+    public function statusOptions(): array
+    {
+        return CallOutcome::answeredOptions();
+    }
+
+    /**
+     * Clear the business lists after a call is logged, so they reflect it.
+     */
+    protected function afterCallLogged(): void
+    {
+        unset($this->allBusinesses, $this->toCallBusinesses, $this->answeredBusinesses, $this->counts);
     }
 
     /**
@@ -247,7 +315,7 @@ new class extends Component {
 
         Flux::modal('business-form')->close();
         $this->resetForm();
-        unset($this->businesses);
+        unset($this->allBusinesses, $this->toCallBusinesses, $this->answeredBusinesses, $this->counts);
     }
 
     /**
@@ -331,7 +399,7 @@ new class extends Component {
 
         $this->confirmingDeleteId = null;
 
-        unset($this->businesses);
+        unset($this->allBusinesses, $this->toCallBusinesses, $this->answeredBusinesses, $this->counts);
 
         Flux::modal('confirm-delete')->close();
         Flux::toast(variant: 'success', text: __('Business deleted.'));
@@ -414,6 +482,26 @@ new class extends Component {
         @endcan
     </header>
 
+    {{-- Counts --}}
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded-xl bg-black/4 p-4">
+            <p class="text-xs font-medium text-black/40">{{ __('To call') }}</p>
+            <p class="mt-1 text-2xl font-semibold">{{ $this->counts['toCall'] }}</p>
+        </div>
+        <div class="rounded-xl bg-amber-50 p-4">
+            <p class="text-xs font-medium text-amber-700/70">{{ __('Pending') }}</p>
+            <p class="mt-1 text-2xl font-semibold text-amber-700">{{ $this->counts['pending'] }}</p>
+        </div>
+        <div class="rounded-xl bg-green-50 p-4">
+            <p class="text-xs font-medium text-green-700/70">{{ __('Interested') }}</p>
+            <p class="mt-1 text-2xl font-semibold text-green-700">{{ $this->counts['interested'] }}</p>
+        </div>
+        <div class="rounded-xl bg-red-50 p-4">
+            <p class="text-xs font-medium text-red-700/70">{{ __('Rejected') }}</p>
+            <p class="mt-1 text-2xl font-semibold text-red-700">{{ $this->counts['rejected'] }}</p>
+        </div>
+    </div>
+
     <flux:input
         wire:model.live.debounce.300ms="search"
         icon="magnifying-glass"
@@ -423,55 +511,200 @@ new class extends Component {
         data-test="business-search"
     />
 
-    @if ($this->businesses->isEmpty())
-        <div class="rounded-2xl border border-zinc-200 bg-white p-10 text-center">
-            <p class="text-sm text-black/55">{{ __('No businesses yet.') }}</p>
-        </div>
-    @else
-        <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
-            <ul class="divide-y divide-black/5">
-                @foreach ($this->businesses as $business)
-                    <li wire:key="business-{{ $business->id }}" class="flex items-center gap-3 p-4 sm:p-5">
-                        <div class="min-w-0 flex-1">
-                            <a
-                                href="{{ route('calling.businesses.show', [$category, $type, $business]) }}"
-                                wire:navigate
-                                class="font-medium text-black hover:underline"
-                            >{{ $business->name }}</a>
+    {{-- To Call --}}
+    <section class="flex flex-col gap-3">
+        <h2 class="text-sm font-semibold tracking-tight text-black/70">
+            {{ __('To call') }} <span class="font-normal text-black/40">({{ $this->toCallBusinesses->count() }})</span>
+        </h2>
 
-                            <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-black/50">
-                                @forelse ($business->phones as $phone)
-                                    <span>{{ $phone->number }}@if($phone->is_primary) <span class="text-black/35">({{ __('primary') }})</span>@endif</span>
-                                @empty
-                                    <span class="text-black/35">{{ __('No phone number') }}</span>
-                                @endforelse
+        @if ($this->toCallBusinesses->isEmpty())
+            <div class="rounded-2xl border border-zinc-200 bg-white p-8 text-center">
+                <p class="text-sm text-black/55">{{ __('Nothing left to call.') }}</p>
+            </div>
+        @else
+            <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+                <ul class="divide-y divide-black/5">
+                    @foreach ($this->toCallBusinesses as $business)
+                        <li wire:key="to-call-{{ $business->id }}" class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-3 sm:p-5">
+                            <div class="min-w-0 flex-1">
+                                <a
+                                    href="{{ route('calling.businesses.show', [$category, $type, $business]) }}"
+                                    wire:navigate
+                                    class="font-medium text-black hover:underline"
+                                >{{ $business->name }}</a>
+
+                                <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-black/50">
+                                    @forelse ($business->phones as $phone)
+                                        <span>{{ $phone->number }}@if($phone->is_primary) <span class="text-black/35">({{ __('primary') }})</span>@endif</span>
+                                    @empty
+                                        <span class="text-black/35">{{ __('No phone number') }}</span>
+                                    @endforelse
+
+                                    @if ($business->calls->isNotEmpty())
+                                        <span class="text-black/35">&middot;</span>
+                                        <span>{{ trans_choice(':count attempt|:count attempts', $business->attemptsSinceLastAnswer(), ['count' => $business->attemptsSinceLastAnswer()]) }}</span>
+                                        <span class="text-black/35">&middot;</span>
+                                        <span>{{ __('Last tried :time', ['time' => $business->lastAttemptAt()?->diffForHumans()]) }}</span>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="flex shrink-0 items-center gap-2">
-                            @can('update', $business)
-                                <button
-                                    type="button"
-                                    wire:click="editBusiness({{ $business->id }})"
-                                    data-test="edit-business-{{ $business->id }}"
-                                    class="rounded-lg px-3 py-1.5 text-xs font-medium text-black/60 transition-colors hover:bg-black/5 hover:text-black"
-                                >{{ __('Edit') }}</button>
-                            @endcan
+                            <div class="flex shrink-0 items-center gap-2">
+                                @if ($business->phones->isNotEmpty())
+                                    <button
+                                        type="button"
+                                        wire:click="startCall({{ $business->id }})"
+                                        data-test="call-{{ $business->id }}"
+                                        class="flex-1 rounded-xl px-5 py-3 text-sm font-semibold transition-opacity hover:opacity-85 sm:flex-none sm:py-2.5"
+                                        style="background:var(--brand);color:var(--brand-foreground)"
+                                    >{{ __('Call') }}</button>
+                                @endif
 
-                            @can('delete', $business)
-                                <button
-                                    type="button"
-                                    wire:click="confirmDelete({{ $business->id }})"
-                                    data-test="delete-business-{{ $business->id }}"
-                                    class="rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
-                                >{{ __('Delete') }}</button>
-                            @endcan
-                        </div>
-                    </li>
+                                @can('update', $business)
+                                    <button
+                                        type="button"
+                                        wire:click="editBusiness({{ $business->id }})"
+                                        data-test="edit-business-{{ $business->id }}"
+                                        class="rounded-lg px-3 py-1.5 text-xs font-medium text-black/60 transition-colors hover:bg-black/5 hover:text-black"
+                                    >{{ __('Edit') }}</button>
+                                @endcan
+
+                                @can('delete', $business)
+                                    <button
+                                        type="button"
+                                        wire:click="confirmDelete({{ $business->id }})"
+                                        data-test="delete-business-{{ $business->id }}"
+                                        class="rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                                    >{{ __('Delete') }}</button>
+                                @endcan
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+    </section>
+
+    {{-- Answered --}}
+    <section class="flex flex-col gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-sm font-semibold tracking-tight text-black/70">
+                {{ __('Answered') }} <span class="font-normal text-black/40">({{ $this->answeredBusinesses->count() }})</span>
+            </h2>
+
+            <div class="flex items-center gap-1 rounded-full bg-black/4 p-1 text-xs">
+                <button
+                    type="button"
+                    wire:click="$set('statusFilter', '')"
+                    @class(['rounded-full px-3 py-1.5 font-medium transition-colors', 'bg-white shadow-sm' => $statusFilter === ''])
+                    data-test="filter-all"
+                >{{ __('All') }}</button>
+
+                @foreach ($this->statusOptions as $option)
+                    <button
+                        type="button"
+                        wire:click="$set('statusFilter', '{{ $option['value'] }}')"
+                        @class(['rounded-full px-3 py-1.5 font-medium transition-colors', 'bg-white shadow-sm' => $statusFilter === $option['value']])
+                        data-test="filter-{{ $option['value'] }}"
+                    >{{ $option['label'] }}</button>
                 @endforeach
-            </ul>
+            </div>
         </div>
-    @endif
+
+        @if ($this->answeredBusinesses->isEmpty())
+            <div class="rounded-2xl border border-zinc-200 bg-white p-8 text-center">
+                <p class="text-sm text-black/55">{{ __('No answered businesses yet.') }}</p>
+            </div>
+        @else
+            <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+                <ul class="divide-y divide-black/5">
+                    @foreach ($this->answeredBusinesses as $business)
+                        @php($lastCall = $business->calls->first())
+                        <li wire:key="answered-{{ $business->id }}" class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:p-5">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <a
+                                        href="{{ route('calling.businesses.show', [$category, $type, $business]) }}"
+                                        wire:navigate
+                                        class="font-medium text-black hover:underline"
+                                    >{{ $business->name }}</a>
+
+                                    <flux:badge size="sm" :color="$business->currentStatus()->badgeColor()">
+                                        {{ $business->currentStatus()->label() }}
+                                    </flux:badge>
+                                </div>
+
+                                <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-black/50">
+                                    @forelse ($business->phones as $phone)
+                                        <span>{{ $phone->number }}@if($phone->is_primary) <span class="text-black/35">({{ __('primary') }})</span>@endif</span>
+                                    @empty
+                                        <span class="text-black/35">{{ __('No phone number') }}</span>
+                                    @endforelse
+                                </div>
+
+                                @if ($lastCall?->note)
+                                    <p class="mt-1.5 text-sm text-black/60">&ldquo;{{ $lastCall->note }}&rdquo;</p>
+                                @endif
+
+                                @if ($lastCall?->follow_up_at)
+                                    <p class="mt-1 text-xs text-black/45">
+                                        {{ __('Follow up on :date', ['date' => $lastCall->follow_up_at->format('j M Y')]) }}
+                                    </p>
+                                @endif
+                            </div>
+
+                            <div class="flex shrink-0 flex-wrap items-center gap-2">
+                                <flux:dropdown position="bottom" align="end">
+                                    <button
+                                        type="button"
+                                        class="rounded-lg px-3 py-1.5 text-xs font-medium text-black/60 transition-colors hover:bg-black/5 hover:text-black"
+                                        data-test="change-status-{{ $business->id }}"
+                                    >{{ __('Change status') }}</button>
+
+                                    <flux:menu>
+                                        @foreach ($this->statusOptions as $option)
+                                            <flux:menu.item
+                                                wire:click="changeStatus({{ $business->id }}, '{{ $option['value'] }}')"
+                                                :disabled="$business->currentStatus()->value === $option['value']"
+                                            >{{ $option['label'] }}</flux:menu.item>
+                                        @endforeach
+                                    </flux:menu>
+                                </flux:dropdown>
+
+                                @if ($business->phones->isNotEmpty())
+                                    <button
+                                        type="button"
+                                        wire:click="startCall({{ $business->id }})"
+                                        data-test="call-{{ $business->id }}"
+                                        class="rounded-lg px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-85"
+                                        style="background:var(--brand);color:var(--brand-foreground)"
+                                    >{{ __('Call again') }}</button>
+                                @endif
+
+                                @can('update', $business)
+                                    <button
+                                        type="button"
+                                        wire:click="editBusiness({{ $business->id }})"
+                                        data-test="edit-business-{{ $business->id }}"
+                                        class="rounded-lg px-3 py-1.5 text-xs font-medium text-black/60 transition-colors hover:bg-black/5 hover:text-black"
+                                    >{{ __('Edit') }}</button>
+                                @endcan
+
+                                @can('delete', $business)
+                                    <button
+                                        type="button"
+                                        wire:click="confirmDelete({{ $business->id }})"
+                                        data-test="delete-business-{{ $business->id }}"
+                                        class="rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                                    >{{ __('Delete') }}</button>
+                                @endcan
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+    </section>
 
     {{-- Add / edit modal --}}
     <flux:modal name="business-form" class="w-full max-w-lg">
@@ -645,6 +878,114 @@ new class extends Component {
                     <span wire:loading wire:target="deleteBusiness">{{ __('Deleting…') }}</span>
                 </flux:button>
             </div>
+        </div>
+    </flux:modal>
+
+    {{-- Phone picker (only shown when a business has more than one number) --}}
+    <flux:modal name="call-phone-picker" class="w-full max-w-sm">
+        <div class="flex flex-col gap-4">
+            <flux:heading size="lg">{{ __('Which number?') }}</flux:heading>
+
+            @if ($loggingCallForBusinessId)
+                @php($callBusiness = \App\Models\Calling\Business::with('phones')->find($loggingCallForBusinessId))
+
+                <div class="flex flex-col gap-2">
+                    @foreach ($callBusiness?->phones ?? [] as $phone)
+                        <button
+                            type="button"
+                            wire:click="chooseCallPhone({{ $phone->id }})"
+                            class="flex items-center justify-between rounded-xl bg-black/4 px-4 py-3.5 text-start transition-colors hover:bg-black/6"
+                            data-test="choose-phone-{{ $phone->id }}"
+                        >
+                            <span class="font-medium">{{ $phone->number }}</span>
+                            @if ($phone->is_primary)
+                                <span class="text-xs text-black/40">{{ __('primary') }}</span>
+                            @endif
+                        </button>
+                    @endforeach
+                </div>
+            @endif
+
+            <flux:modal.close>
+                <flux:button variant="ghost" type="button" class="w-full">{{ __('Cancel') }}</flux:button>
+            </flux:modal.close>
+        </div>
+    </flux:modal>
+
+    {{-- Call outcome --}}
+    <flux:modal name="call-outcome" class="w-full max-w-sm" @close="callStage = null">
+        <div class="flex flex-col gap-5">
+            @if ($callStage !== 'answered')
+                <div>
+                    <flux:heading size="lg">{{ __('How did it go?') }}</flux:heading>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button
+                        type="button"
+                        wire:click="logNotAnswered"
+                        data-test="outcome-not-answered"
+                        class="rounded-xl bg-black/4 px-5 py-4 text-base font-medium transition-colors hover:bg-black/6"
+                    >{{ __('Not answered') }}</button>
+
+                    <button
+                        type="button"
+                        wire:click="markAnswered"
+                        data-test="outcome-answered"
+                        class="rounded-xl px-5 py-4 text-base font-medium transition-opacity hover:opacity-85"
+                        style="background:var(--brand);color:var(--brand-foreground)"
+                    >{{ __('Answered') }}</button>
+                </div>
+            @else
+                <form wire:submit="logAnswered" class="flex flex-col gap-5">
+                    <div>
+                        <flux:heading size="lg">{{ __('What did they say?') }}</flux:heading>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        @foreach ($this->statusOptions as $option)
+                            <button
+                                type="button"
+                                wire:click="$set('callOutcome', '{{ $option['value'] }}')"
+                                data-test="select-outcome-{{ $option['value'] }}"
+                                @class([
+                                    'rounded-xl px-3 py-3.5 text-sm font-medium transition-colors',
+                                    'bg-black text-white' => $callOutcome === $option['value'],
+                                    'bg-black/4 hover:bg-black/6' => $callOutcome !== $option['value'],
+                                ])
+                            >{{ $option['label'] }}</button>
+                        @endforeach
+                    </div>
+
+                    <flux:error name="callOutcome" />
+
+                    <flux:textarea
+                        wire:model="callNote"
+                        :label="__('Note (optional)')"
+                        rows="3"
+                        data-test="call-note"
+                    />
+
+                    <flux:input
+                        wire:model="callFollowUpAt"
+                        type="date"
+                        :label="__('Follow-up date (optional)')"
+                        data-test="call-follow-up"
+                    />
+
+                    <button
+                        type="submit"
+                        data-test="save-call-outcome"
+                        class="rounded-xl px-5 py-3.5 text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-50"
+                        style="background:var(--brand);color:var(--brand-foreground)"
+                        wire:loading.attr="disabled"
+                        wire:target="logAnswered"
+                    >
+                        <span wire:loading.remove wire:target="logAnswered">{{ __('Save') }}</span>
+                        <span wire:loading wire:target="logAnswered">{{ __('Saving…') }}</span>
+                    </button>
+                </form>
+            @endif
         </div>
     </flux:modal>
 </div>
