@@ -186,10 +186,10 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
             :description="__('Create your workspace and your own Super Admin account. This takes about two minutes.')"
         />
 
-        <form wire:submit="register" class="mt-8 flex flex-col gap-10">
+        <form wire:submit="register" class="mt-9 flex flex-col gap-10">
             {{-- Organization --}}
             <fieldset class="flex flex-col gap-5">
-                <legend class="mb-5 w-full border-b border-[color:var(--color-rule)] pb-2 text-xs font-medium tracking-[0.14em] text-zinc-400 uppercase">
+                <legend class="mb-5 w-full text-xs font-medium tracking-[0.14em] text-black/35 uppercase">
                     {{ __('Your company') }}
                 </legend>
 
@@ -212,14 +212,14 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
                         wire:model="logo"
                         accept="image/png,image/jpeg,image/webp"
                         data-test="logo-input"
-                        class="block w-full cursor-pointer rounded-md border border-zinc-200 bg-white text-sm text-zinc-600 file:mr-4 file:cursor-pointer file:border-0 file:bg-zinc-50 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-zinc-700 hover:file:bg-zinc-100"
+                        class="block w-full cursor-pointer rounded-xl bg-black/4 text-sm text-black/60 transition-colors hover:bg-black/6 file:mr-4 file:cursor-pointer file:rounded-l-xl file:border-0 file:bg-black/6 file:px-4 file:py-3 file:text-sm file:font-medium file:text-black"
                     />
 
                     <flux:description>
                         {{ __('PNG, JPG or WEBP, up to 2 MB. SVG files are not accepted.') }}
                     </flux:description>
 
-                    <div wire:loading wire:target="logo" class="text-sm text-zinc-500">
+                    <div wire:loading wire:target="logo" class="text-sm text-black/50">
                         {{ __('Uploading…') }}
                     </div>
 
@@ -237,8 +237,8 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
                                 title="{{ $preset['label'] }}"
                                 aria-label="{{ $preset['label'] }}"
                                 @class([
-                                    'size-8 rounded-md ring-offset-2 transition-transform hover:scale-110',
-                                    'ring-2 ring-zinc-900' => strtolower($this->previewColor) === strtolower($preset['value']),
+                                    'size-9 rounded-full ring-offset-2 transition-transform hover:scale-110',
+                                    'ring-2 ring-black' => strtolower($this->previewColor) === strtolower($preset['value']),
                                 ])
                                 style="background: {{ $preset['value'] }}"
                             ></button>
@@ -250,7 +250,7 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
                             type="color"
                             wire:model.live="primaryColor"
                             aria-label="{{ __('Custom colour') }}"
-                            class="h-10 w-14 cursor-pointer rounded-md border border-zinc-200 bg-white p-1"
+                            class="h-11 w-14 cursor-pointer rounded-xl border-0 bg-black/4 p-1"
                         />
 
                         <flux:input
@@ -268,7 +268,7 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
 
             {{-- Admin account --}}
             <fieldset class="flex flex-col gap-5">
-                <legend class="mb-5 w-full border-b border-[color:var(--color-rule)] pb-2 text-xs font-medium tracking-[0.14em] text-zinc-400 uppercase">
+                <legend class="mb-5 w-full text-xs font-medium tracking-[0.14em] text-black/35 uppercase">
                     {{ __('Your Super Admin account') }}
                 </legend>
 
@@ -314,19 +314,24 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
             </fieldset>
 
             <div class="flex flex-col gap-4">
-                <flux:button
-                    variant="primary"
+                <button
                     type="submit"
-                    class="w-full"
                     data-test="register-button"
+                    class="w-full rounded-full bg-black px-6 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+                    wire:loading.attr="disabled"
+                    wire:target="register"
                 >
                     <span wire:loading.remove wire:target="register">{{ __('Create workspace') }}</span>
                     <span wire:loading wire:target="register">{{ __('Creating your workspace…') }}</span>
-                </flux:button>
+                </button>
 
-                <p class="text-sm text-zinc-500">
+                <p class="text-sm text-black/55">
                     {{ __('Already have an account?') }}
-                    <flux:link :href="route('login')" wire:navigate>{{ __('Log in') }}</flux:link>
+                    <a
+                        href="{{ route('login') }}"
+                        wire:navigate
+                        class="font-medium text-black underline decoration-black/25 underline-offset-4 transition-colors hover:decoration-black"
+                    >{{ __('Log in') }}</a>
                 </p>
             </div>
         </form>
@@ -335,19 +340,20 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
     {{-- Live preview --}}
     <div class="lg:col-span-5">
         <div class="lg:sticky lg:top-24">
-            <p class="text-xs font-medium tracking-[0.14em] text-zinc-400 uppercase">
+            <p class="text-xs font-medium tracking-[0.14em] text-black/35 uppercase">
                 {{ __('Live preview') }}
             </p>
 
-            <p class="mt-2 text-sm leading-relaxed text-zinc-500">
+            <p class="mt-2.5 text-sm leading-relaxed text-black/55">
                 {{ __('This is how your workspace sidebar will look to your team.') }}
             </p>
 
-            <div class="mt-5">
+            <div class="mt-5 rounded-2xl bg-black/4 p-2">
                 <x-organization-preview
                     :name="$this->previewName"
                     :color="$this->previewColor"
                     :logo-url="$logo?->temporaryUrl()"
+                    class="!rounded-xl !border-black/8"
                 />
             </div>
         </div>

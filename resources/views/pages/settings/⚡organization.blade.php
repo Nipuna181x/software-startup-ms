@@ -158,6 +158,7 @@ new #[Title('Organization settings')] class extends Component {
     <x-pages::settings.layout
         :heading="__('Organization')"
         :subheading="__('Your company name, logo and theme colour')"
+        :wide="true"
     >
         <div class="grid gap-8 lg:grid-cols-2">
             <form wire:submit="save" class="flex flex-col gap-6">
@@ -177,14 +178,14 @@ new #[Title('Organization settings')] class extends Component {
                         wire:model="logo"
                         accept="image/png,image/jpeg,image/webp"
                         data-test="logo-input"
-                        class="block w-full cursor-pointer rounded-md border border-zinc-200 bg-white text-sm text-zinc-600 file:mr-4 file:cursor-pointer file:border-0 file:bg-zinc-50 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-zinc-700 hover:file:bg-zinc-100"
+                        class="block w-full cursor-pointer rounded-xl bg-black/4 text-sm text-black/60 transition-colors hover:bg-black/6 file:mr-4 file:cursor-pointer file:rounded-l-xl file:border-0 file:bg-black/6 file:px-4 file:py-3 file:text-sm file:font-medium file:text-black"
                     />
 
                     <flux:description>
                         {{ __('PNG, JPG or WEBP, up to 2 MB. SVG files are not accepted.') }}
                     </flux:description>
 
-                    <div wire:loading wire:target="logo" class="text-sm text-zinc-500">
+                    <div wire:loading wire:target="logo" class="text-sm text-black/50">
                         {{ __('Uploading…') }}
                     </div>
 
@@ -214,8 +215,8 @@ new #[Title('Organization settings')] class extends Component {
                                 title="{{ $preset['label'] }}"
                                 aria-label="{{ $preset['label'] }}"
                                 @class([
-                                    'size-8 rounded-md ring-offset-2 transition-transform hover:scale-110',
-                                    'ring-2 ring-zinc-900' => strtolower($this->previewColor) === strtolower($preset['value']),
+                                    'size-9 rounded-full ring-offset-2 transition-transform hover:scale-110',
+                                    'ring-2 ring-black' => strtolower($this->previewColor) === strtolower($preset['value']),
                                 ])
                                 style="background: {{ $preset['value'] }}"
                             ></button>
@@ -227,7 +228,7 @@ new #[Title('Organization settings')] class extends Component {
                             type="color"
                             wire:model.live="primaryColor"
                             aria-label="{{ __('Custom colour') }}"
-                            class="h-10 w-14 cursor-pointer rounded-md border border-zinc-200 bg-white p-1"
+                            class="h-11 w-14 cursor-pointer rounded-xl border-0 bg-black/4 p-1"
                         />
 
                         <flux:input
@@ -242,22 +243,30 @@ new #[Title('Organization settings')] class extends Component {
                     <flux:error name="primaryColor" />
                 </flux:field>
 
-                <flux:button variant="primary" type="submit" class="self-start" data-test="save-organization">
+                <button
+                    type="submit"
+                    data-test="save-organization"
+                    class="self-start rounded-full px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
+                    style="background:var(--brand);color:var(--brand-foreground)"
+                    wire:loading.attr="disabled"
+                    wire:target="save"
+                >
                     <span wire:loading.remove wire:target="save">{{ __('Save changes') }}</span>
                     <span wire:loading wire:target="save">{{ __('Saving…') }}</span>
-                </flux:button>
+                </button>
             </form>
 
             <div>
-                <p class="text-xs font-medium tracking-[0.14em] text-zinc-400 uppercase">
+                <p class="text-xs font-medium tracking-[0.14em] text-black/35 uppercase">
                     {{ __('Live preview') }}
                 </p>
 
-                <div class="mt-4">
+                <div class="mt-4 rounded-2xl bg-black/4 p-2">
                     <x-organization-preview
                         :name="trim($name) !== '' ? $name : __('Your company')"
                         :color="$this->previewColor"
                         :logo-url="$this->previewLogoUrl"
+                        class="!rounded-xl !border-black/8"
                     />
                 </div>
             </div>

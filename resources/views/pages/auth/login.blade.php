@@ -1,5 +1,5 @@
 <x-layouts::auth :title="__('Log in')">
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-7">
         <x-auth-header
             :title="__('Log in')"
             :description="__('Enter the email and password for your Startsuite account.')"
@@ -32,24 +32,31 @@
                 />
 
                 @if (Route::has('password.request'))
-                    <flux:link class="absolute end-0 top-0 text-sm" :href="route('password.request')" wire:navigate>
-                        {{ __('Forgot password?') }}
-                    </flux:link>
+                    <a
+                        class="absolute end-0 top-0 text-sm text-black/50 transition-colors hover:text-black"
+                        href="{{ route('password.request') }}"
+                        wire:navigate
+                    >{{ __('Forgot password?') }}</a>
                 @endif
             </div>
 
             <flux:checkbox name="remember" :label="__('Remember me')" :checked="old('remember')" />
 
-            <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">
-                {{ __('Log in') }}
-            </flux:button>
+            <button
+                type="submit"
+                data-test="login-button"
+                class="w-full rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-80"
+            >{{ __('Log in') }}</button>
         </form>
 
-        <p class="border-t border-[color:var(--color-rule)] pt-6 text-sm text-zinc-500">
+        <p class="border-t border-black/6 pt-6 text-sm text-black/55">
             {{ __('Registering a new company?') }}
-            <flux:link :href="route('register')" wire:navigate data-test="register-link">
-                {{ __('Create your workspace') }}
-            </flux:link>
+            <a
+                href="{{ route('register') }}"
+                wire:navigate
+                data-test="register-link"
+                class="font-medium text-black underline decoration-black/25 underline-offset-4 transition-colors hover:decoration-black"
+            >{{ __('Create your workspace') }}</a>
         </p>
     </div>
 </x-layouts::auth>

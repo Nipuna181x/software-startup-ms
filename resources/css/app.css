@@ -6,7 +6,7 @@
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -24,10 +24,10 @@
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
 
-    /* Startsuite's own accent, used on the public site and auth pages. */
-    --color-ink: #0c1424;
-    --color-paper: #fbfaf8;
-    --color-rule: #e3e1dc;
+    /* Startsuite's own surface tokens: a near-monochrome, light palette. */
+    --color-ink: #000000;
+    --color-paper: #ffffff;
+    --color-rule: #e5e7eb;
 }
 
 /*
@@ -106,37 +106,62 @@ select:focus[data-flux-control] {
 /*
  * Startsuite wordmark.
  *
- * The mark is pure type: tightened tracking, a heavier stem on the first
- * syllable and a single square accent that doubles as the period.
+ * Pure type: tightened tracking, a heavier stem on the first syllable and a
+ * single square accent that doubles as the period.
  */
 .wordmark {
     font-weight: 600;
     letter-spacing: -0.045em;
-    font-feature-settings: 'ss01';
     white-space: nowrap;
 }
 
 .wordmark-strong {
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .wordmark-light {
     font-weight: 400;
+    opacity: 0.55;
 }
 
-/* Editorial rules used across the public site. */
-.rule-top {
-    border-top: 1px solid var(--color-rule);
+/*
+ * Display headings.
+ *
+ * Large, tightly tracked and tightly led, matching the reference's
+ * text-[62px]/18 treatment.
+ */
+.display {
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    line-height: 1.02;
+    text-wrap: balance;
+}
+
+/* A restrained gradient for one or two hero words. */
+.gradient-ink {
+    background-image: linear-gradient(105deg, #000 0%, #000 35%, #6a7282 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Soft, borderless surfaces built from black at low opacity. */
+.surface {
+    background-color: color-mix(in oklab, #000 4%, transparent);
+}
+
+.surface-strong {
+    background-color: color-mix(in oklab, #000 6%, transparent);
 }
 
 /* Reveal-on-scroll, kept deliberately small. */
 @media (prefers-reduced-motion: no-preference) {
     .reveal {
         opacity: 0;
-        transform: translateY(12px);
-        animation: reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        transform: translateY(14px);
+        animation: reveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         animation-timeline: view();
-        animation-range: entry 0% cover 22%;
+        animation-range: entry 0% cover 24%;
     }
 }
 
@@ -145,4 +170,15 @@ select:focus[data-flux-control] {
         opacity: 1;
         transform: none;
     }
+}
+
+/* Flux overrides so dashboard controls follow the organization's colour. */
+[data-flux-button][data-variant='primary'] {
+    background-color: var(--brand) !important;
+    color: var(--brand-foreground) !important;
+    border-color: transparent !important;
+}
+
+[data-flux-button][data-variant='primary']:hover {
+    background-color: var(--brand-hover) !important;
 }

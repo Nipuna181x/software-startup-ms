@@ -360,15 +360,19 @@ new #[Title('Users')] class extends Component {
 <div class="flex w-full flex-col gap-6">
     <header class="flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight">{{ __('Users') }}</h1>
-            <p class="mt-1 text-sm text-zinc-500">
+            <h1 class="display text-[30px]">{{ __('Users') }}</h1>
+            <p class="mt-2 text-sm text-black/55">
                 {{ __('Everyone with access to :organization.', ['organization' => $organization?->name]) }}
             </p>
         </div>
 
-        <flux:button variant="primary" icon="plus" wire:click="addUser" data-test="add-user">
-            {{ __('Add user') }}
-        </flux:button>
+        <button
+            type="button"
+            wire:click="addUser"
+            data-test="add-user"
+            class="rounded-full px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
+            style="background:var(--brand);color:var(--brand-foreground)"
+        >{{ __('Add user') }}</button>
     </header>
 
     <flux:input
@@ -379,7 +383,7 @@ new #[Title('Users')] class extends Component {
         data-test="user-search"
     />
 
-    <div class="overflow-x-auto rounded-lg border border-zinc-200">
+    <div class="overflow-x-auto rounded-2xl bg-black/4 p-1.5">
         <flux:table :paginate="$this->users">
             <flux:table.columns>
                 <flux:table.column>{{ __('Name') }}</flux:table.column>
@@ -395,18 +399,18 @@ new #[Title('Users')] class extends Component {
                         <flux:table.cell>
                             <div class="flex items-center gap-3">
                                 <span
-                                    class="grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold"
-                                    style="background:var(--brand-subtle);color:var(--brand-hover)"
+                                    class="grid size-9 shrink-0 place-items-center rounded-full text-xs font-semibold"
+                                    style="background:var(--brand-subtle);color:var(--brand-active)"
                                 >{{ $user->initials() }}</span>
 
                                 <div class="min-w-0">
-                                    <div class="truncate font-medium text-zinc-800">
+                                    <div class="truncate font-medium">
                                         {{ $user->name }}
                                         @if ($user->is(auth()->user()))
-                                            <span class="ms-1 text-xs font-normal text-zinc-400">{{ __('(you)') }}</span>
+                                            <span class="ms-1 text-xs font-normal text-black/35">{{ __('(you)') }}</span>
                                         @endif
                                     </div>
-                                    <div class="truncate text-xs text-zinc-500">{{ $user->email }}</div>
+                                    <div class="truncate text-xs text-black/45">{{ $user->email }}</div>
                                 </div>
                             </div>
                         </flux:table.cell>
@@ -423,7 +427,7 @@ new #[Title('Users')] class extends Component {
                             </flux:badge>
                         </flux:table.cell>
 
-                        <flux:table.cell class="text-sm whitespace-nowrap text-zinc-500">
+                        <flux:table.cell class="text-sm whitespace-nowrap text-black/50">
                             {{ $user->created_at?->format('j M Y') }}
                         </flux:table.cell>
 
@@ -468,7 +472,7 @@ new #[Title('Users')] class extends Component {
                     </flux:table.row>
                 @empty
                     <flux:table.row>
-                        <flux:table.cell colspan="5" class="py-10 text-center text-sm text-zinc-500">
+                        <flux:table.cell colspan="5" class="py-12 text-center text-sm text-black/45">
                             {{ __('No users match that search.') }}
                         </flux:table.cell>
                     </flux:table.row>
@@ -557,12 +561,19 @@ new #[Title('Users')] class extends Component {
                     <flux:button variant="ghost" type="button">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
 
-                <flux:button variant="primary" type="submit" data-test="save-user">
+                <button
+                    type="submit"
+                    data-test="save-user"
+                    class="rounded-full px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
+                    style="background:var(--brand);color:var(--brand-foreground)"
+                    wire:loading.attr="disabled"
+                    wire:target="save"
+                >
                     <span wire:loading.remove wire:target="save">
                         {{ $editingId ? __('Save changes') : __('Add user') }}
                     </span>
                     <span wire:loading wire:target="save">{{ __('Saving…') }}</span>
-                </flux:button>
+                </button>
             </div>
         </form>
     </flux:modal>
@@ -609,10 +620,17 @@ new #[Title('Users')] class extends Component {
                     <flux:button variant="ghost" type="button">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
 
-                <flux:button variant="primary" type="submit" data-test="confirm-reset-password">
+                <button
+                    type="submit"
+                    data-test="confirm-reset-password"
+                    class="rounded-full px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
+                    style="background:var(--brand);color:var(--brand-foreground)"
+                    wire:loading.attr="disabled"
+                    wire:target="resetPassword"
+                >
                     <span wire:loading.remove wire:target="resetPassword">{{ __('Reset password') }}</span>
                     <span wire:loading wire:target="resetPassword">{{ __('Resetting…') }}</span>
-                </flux:button>
+                </button>
             </div>
         </form>
     </flux:modal>

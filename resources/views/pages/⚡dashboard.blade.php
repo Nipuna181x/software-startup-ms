@@ -55,59 +55,63 @@ new #[Title('Dashboard')] class extends Component {
 
 <div class="flex w-full flex-col gap-8">
     <header>
-        <h1 class="text-2xl font-semibold tracking-tight">
+        <h1 class="display text-[30px]">
             {{ __('Welcome back, :name', ['name' => Str::before(auth()->user()->name, ' ')]) }}
         </h1>
-        <p class="mt-1 text-sm text-zinc-500">
+        <p class="mt-2 text-sm text-black/55">
             {{ __('This is :organization on Startsuite.', ['organization' => $organization?->name]) }}
         </p>
     </header>
 
     <div class="grid gap-4 sm:grid-cols-3">
         @foreach ($this->stats as $stat)
-            <div class="rounded-lg border border-zinc-200 p-5">
-                <p class="text-xs font-medium tracking-[0.12em] text-zinc-400 uppercase">
+            <div class="rounded-2xl bg-black/4 p-6 transition-colors hover:bg-black/6">
+                <p class="text-xs font-medium tracking-[0.12em] text-black/40 uppercase">
                     {{ $stat['label'] }}
                 </p>
-                <p class="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--brand)]">
+                <p class="display mt-4 text-[38px]" style="color:var(--brand)">
                     {{ $stat['value'] }}
                 </p>
-                <p class="mt-1 text-xs text-zinc-500">{{ $stat['hint'] }}</p>
+                <p class="mt-1.5 text-xs text-black/45">{{ $stat['hint'] }}</p>
             </div>
         @endforeach
     </div>
 
-    <section class="rounded-lg border border-zinc-200">
-        <header class="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
-            <h2 class="text-sm font-semibold tracking-tight">{{ __('Recently added') }}</h2>
+    <section class="overflow-hidden rounded-2xl bg-black/4">
+        <header class="flex items-center justify-between px-6 py-5">
+            <h2 class="text-[15px] font-medium tracking-tight">{{ __('Recently added') }}</h2>
 
             @can('super-admin')
-                <flux:link :href="route('users.index')" wire:navigate class="text-sm">
-                    {{ __('Manage users') }}
-                </flux:link>
+                <a
+                    href="{{ route('users.index') }}"
+                    wire:navigate
+                    class="rounded-full bg-black/6 px-4 py-2 text-xs font-medium transition-colors hover:bg-black/10"
+                >{{ __('Manage users') }}</a>
             @endcan
         </header>
 
-        <ul class="divide-y divide-zinc-100">
+        <ul class="divide-y divide-black/5 border-t border-black/5">
             @foreach ($this->recentMembers as $member)
-                <li class="flex items-center gap-3 px-5 py-3">
+                <li class="flex items-center gap-3.5 px-6 py-4">
                     <span
-                        class="grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold"
-                        style="background:var(--brand-subtle);color:var(--brand-hover)"
+                        class="grid size-9 shrink-0 place-items-center rounded-full text-xs font-semibold"
+                        style="background:var(--brand-subtle);color:var(--brand-active)"
                     >{{ $member->initials() }}</span>
 
                     <div class="min-w-0 flex-1">
-                        <p class="truncate text-sm font-medium text-zinc-800">{{ $member->name }}</p>
-                        <p class="truncate text-xs text-zinc-500">{{ $member->email }}</p>
+                        <p class="truncate text-sm font-medium">{{ $member->name }}</p>
+                        <p class="truncate text-xs text-black/45">{{ $member->email }}</p>
                     </div>
 
-                    <span class="text-xs text-zinc-400">{{ $member->role->label() }}</span>
+                    <span class="rounded-full bg-black/6 px-3 py-1 text-xs text-black/55">
+                        {{ $member->role->label() }}
+                    </span>
                 </li>
             @endforeach
         </ul>
     </section>
 
-    <p class="text-xs text-zinc-400">
+    <p class="text-xs text-black/35">
         {{ __('Module widgets will appear here as modules are added.') }}
     </p>
 </div>

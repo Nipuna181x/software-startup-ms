@@ -70,16 +70,23 @@ new #[Title('Profile settings')] class extends Component {
 
             <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
 
-            <flux:button variant="primary" type="submit" data-test="update-profile-button">
+            <button
+                type="submit"
+                data-test="update-profile-button"
+                class="rounded-full px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
+                style="background:var(--brand);color:var(--brand-foreground)"
+                wire:loading.attr="disabled"
+                wire:target="updateProfileInformation"
+            >
                 <span wire:loading.remove wire:target="updateProfileInformation">{{ __('Save') }}</span>
                 <span wire:loading wire:target="updateProfileInformation">{{ __('Saving…') }}</span>
-            </flux:button>
+            </button>
         </form>
 
         <flux:separator class="my-8" variant="subtle" />
 
         <form wire:submit="updatePassword" class="w-full space-y-6">
-            <flux:heading size="lg">{{ __('Change password') }}</flux:heading>
+            <h3 class="text-[15px] font-medium tracking-tight">{{ __('Change password') }}</h3>
 
             <flux:input
                 wire:model="current_password"
@@ -111,10 +118,17 @@ new #[Title('Profile settings')] class extends Component {
                 data-test="new-password-confirmation"
             />
 
-            <flux:button variant="primary" type="submit" data-test="update-password-button">
+            <button
+                type="submit"
+                data-test="update-password-button"
+                class="rounded-full px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
+                style="background:var(--brand);color:var(--brand-foreground)"
+                wire:loading.attr="disabled"
+                wire:target="updatePassword"
+            >
                 <span wire:loading.remove wire:target="updatePassword">{{ __('Change password') }}</span>
                 <span wire:loading wire:target="updatePassword">{{ __('Changing…') }}</span>
-            </flux:button>
+            </button>
         </form>
     </x-pages::settings.layout>
 </section>

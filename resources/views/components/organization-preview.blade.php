@@ -14,12 +14,12 @@
 @endphp
 
 <div
-    {{ $attributes->class(['overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(12,20,36,0.04),0_12px_32px_-14px_rgba(12,20,36,0.2)]']) }}
+    {{ $attributes->class(['overflow-hidden rounded-xl border border-black/8 bg-white']) }}
     style="--p-500:{{ $ramp['500'] }};--p-600:{{ $ramp['600'] }};--p-50:{{ $ramp['50'] }};--p-100:{{ $ramp['100'] }};--p-fg:{{ $foreground }}"
 >
     <div class="flex min-h-[260px]">
         {{-- Sidebar --}}
-        <div class="flex w-[45%] shrink-0 flex-col border-e border-zinc-200 bg-zinc-50/80 p-3">
+        <div class="flex w-[45%] shrink-0 flex-col border-e border-black/6 bg-black/[0.03] p-3">
             <div class="flex items-center gap-2">
                 @if ($logoUrl)
                     <img
@@ -34,12 +34,12 @@
                     >{{ $initials }}</span>
                 @endif
 
-                <span class="truncate text-[13px] font-semibold tracking-tight text-zinc-800">
+                <span class="truncate text-[13px] font-semibold tracking-tight text-black/85">
                     {{ $name }}
                 </span>
             </div>
 
-            <div class="mt-1 ps-9 text-[9px] text-zinc-400">Startsuite</div>
+            <div class="mt-1 ps-9 text-[9px] text-black/40">Startsuite</div>
 
             <div class="mt-5 space-y-1">
                 @foreach (['Dashboard', 'Users', 'Settings'] as $index => $item)
@@ -52,7 +52,7 @@
                             style="background:{{ $index === 0 ? 'var(--p-500)' : '#d4d4d8' }}"
                         ></span>
                         <span
-                            class="text-[10px] {{ $index === 0 ? 'font-semibold' : 'text-zinc-500' }}"
+                            class="text-[10px] {{ $index === 0 ? 'font-semibold' : 'text-black/50' }}"
                             @if ($index === 0) style="color:var(--p-600)" @endif
                         >{{ $item }}</span>
                     </div>
@@ -62,18 +62,18 @@
 
         {{-- Panel --}}
         <div class="flex min-w-0 flex-1 flex-col p-3">
-            <div class="text-[12px] font-semibold tracking-tight text-zinc-800">
+            <div class="text-[12px] font-semibold tracking-tight text-black/85">
                 {{ __('Welcome back') }}
             </div>
 
             <div class="mt-3 grid grid-cols-2 gap-2">
-                <div class="rounded border border-zinc-200 p-2">
-                    <div class="text-[8px] text-zinc-400">{{ __('Team members') }}</div>
+                <div class="rounded border border-black/8 p-2">
+                    <div class="text-[8px] text-black/40">{{ __('Team members') }}</div>
                     <div class="mt-0.5 text-[14px] font-semibold" style="color:var(--p-600)">1</div>
                 </div>
-                <div class="rounded border border-zinc-200 p-2">
-                    <div class="text-[8px] text-zinc-400">{{ __('Super Admins') }}</div>
-                    <div class="mt-0.5 text-[14px] font-semibold text-zinc-800">1</div>
+                <div class="rounded border border-black/8 p-2">
+                    <div class="text-[8px] text-black/40">{{ __('Super Admins') }}</div>
+                    <div class="mt-0.5 text-[14px] font-semibold text-black/85">1</div>
                 </div>
             </div>
 
@@ -84,7 +84,7 @@
 
             <div class="mt-3 space-y-1.5">
                 @foreach ([70, 52, 61] as $width)
-                    <div class="h-1.5 rounded-full bg-zinc-100" style="width: {{ $width }}%"></div>
+                    <div class="h-1.5 rounded-full bg-black/6" style="width: {{ $width }}%"></div>
                 @endforeach
             </div>
         </div>

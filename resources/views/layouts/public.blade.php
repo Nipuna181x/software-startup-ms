@@ -3,35 +3,41 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-[color:var(--color-paper)] text-[color:var(--color-ink)] antialiased">
-        <header class="sticky top-0 z-40 border-b border-[color:var(--color-rule)] bg-[color:var(--color-paper)]/85 backdrop-blur">
-            <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-                <a href="{{ route('home') }}" wire:navigate class="transition-opacity hover:opacity-70">
+    <body class="min-h-screen bg-white text-black antialiased">
+        <header class="sticky top-0 z-50 border-b border-black/6 bg-white/80 backdrop-blur-xl">
+            <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
+                <a href="{{ route('home') }}" wire:navigate class="transition-opacity hover:opacity-60">
                     <x-wordmark size="base" />
                     <span class="sr-only">Startsuite home</span>
                 </a>
 
-                <nav class="flex items-center gap-1 text-sm">
+                <nav class="hidden items-center gap-8 text-sm text-black/60 md:flex">
+                    <a class="transition-colors hover:text-black" href="{{ route('home') }}#how-it-works" wire:navigate>How it works</a>
+                    <a class="transition-colors hover:text-black" href="{{ route('home') }}#branding" wire:navigate>Branding</a>
+                    <a class="transition-colors hover:text-black" href="{{ route('home') }}#roadmap" wire:navigate>What's next</a>
+                </nav>
+
+                <div class="flex items-center gap-2">
                     @auth
                         <a
                             href="{{ route('dashboard') }}"
                             wire:navigate
-                            class="rounded-sm px-3 py-2 font-medium text-[color:var(--color-ink)] transition-colors hover:bg-zinc-900/5"
+                            class="rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-80"
                         >Dashboard</a>
                     @else
                         <a
                             href="{{ route('login') }}"
                             wire:navigate
-                            class="rounded-sm px-3 py-2 font-medium text-zinc-600 transition-colors hover:text-[color:var(--color-ink)]"
+                            class="rounded-full px-4 py-2.5 text-sm font-medium text-black/60 transition-colors hover:text-black"
                         >Log in</a>
 
                         <a
                             href="{{ route('register') }}"
                             wire:navigate
-                            class="ms-1 rounded-sm bg-[color:var(--color-ink)] px-4 py-2 font-medium text-white transition-transform hover:-translate-y-px"
-                        >Register your company</a>
+                            class="rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-80"
+                        >Get started</a>
                     @endauth
-                </nav>
+                </div>
             </div>
         </header>
 
@@ -39,37 +45,37 @@
             {{ $slot }}
         </main>
 
-        <footer class="mt-24 border-t border-[color:var(--color-rule)]">
-            <div class="mx-auto max-w-6xl px-6 py-12">
-                <div class="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+        <footer class="mt-28 border-t border-black/6">
+            <div class="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+                <div class="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
                     <div class="max-w-xs">
                         <x-wordmark size="sm" />
-                        <p class="mt-3 text-sm leading-relaxed text-zinc-500">
+                        <p class="mt-3 text-sm leading-relaxed text-black/50">
                             A private, branded workspace for your company and the people in it.
                         </p>
                     </div>
 
-                    <nav class="flex gap-12 text-sm">
+                    <nav class="flex gap-14 text-sm">
                         <div>
-                            <p class="mb-3 font-medium text-zinc-400">Product</p>
-                            <ul class="space-y-2">
-                                <li><a class="text-zinc-600 hover:text-[color:var(--color-ink)]" href="{{ route('home') }}#how-it-works" wire:navigate>How it works</a></li>
-                                <li><a class="text-zinc-600 hover:text-[color:var(--color-ink)]" href="{{ route('home') }}#branding" wire:navigate>Branding</a></li>
-                                <li><a class="text-zinc-600 hover:text-[color:var(--color-ink)]" href="{{ route('home') }}#roadmap" wire:navigate>What's next</a></li>
+                            <p class="mb-3.5 font-medium text-black/40">Product</p>
+                            <ul class="space-y-2.5">
+                                <li><a class="text-black/60 transition-colors hover:text-black" href="{{ route('home') }}#how-it-works" wire:navigate>How it works</a></li>
+                                <li><a class="text-black/60 transition-colors hover:text-black" href="{{ route('home') }}#branding" wire:navigate>Branding</a></li>
+                                <li><a class="text-black/60 transition-colors hover:text-black" href="{{ route('home') }}#roadmap" wire:navigate>What's next</a></li>
                             </ul>
                         </div>
 
                         <div>
-                            <p class="mb-3 font-medium text-zinc-400">Access</p>
-                            <ul class="space-y-2">
-                                <li><a class="text-zinc-600 hover:text-[color:var(--color-ink)]" href="{{ route('register') }}" wire:navigate>Register</a></li>
-                                <li><a class="text-zinc-600 hover:text-[color:var(--color-ink)]" href="{{ route('login') }}" wire:navigate>Log in</a></li>
+                            <p class="mb-3.5 font-medium text-black/40">Access</p>
+                            <ul class="space-y-2.5">
+                                <li><a class="text-black/60 transition-colors hover:text-black" href="{{ route('register') }}" wire:navigate>Register</a></li>
+                                <li><a class="text-black/60 transition-colors hover:text-black" href="{{ route('login') }}" wire:navigate>Log in</a></li>
                             </ul>
                         </div>
                     </nav>
                 </div>
 
-                <p class="mt-12 border-t border-[color:var(--color-rule)] pt-6 text-xs text-zinc-400">
+                <p class="mt-14 border-t border-black/6 pt-6 text-xs text-black/40">
                     &copy; {{ date('Y') }} Startsuite
                 </p>
             </div>
