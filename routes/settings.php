@@ -1,39 +1,17 @@
 <?php
 
-use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'active'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
     Route::livewire('settings/profile', 'pages::settings.profile')->name('profile.edit');
+
+    Route::livewire('settings/organization', 'pages::settings.organization')
+        ->middleware('can:super-admin')
+        ->name('organization.edit');
+
+    Route::livewire('users', 'pages::users.index')
+        ->middleware('can:super-admin')
+        ->name('users.index');
 });
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::livewire('settings/appearance', 'pages::settings.appearance')->name('appearance.edit');
-
-    Route::livewire('settings/security', 'pages::settings.security')
-        ->middleware(
-            when(
-                Features::canManageTwoFactorAuthentication()
-                && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
-                ['password.confirm'],
-                [],
-            ),
-        )
-        ->name('security.edit');
-
-    Route::livewire('settings/teams', 'pages::teams.index')->name('teams.index');
-
-    Route::middleware(EnsureTeamMembership::class)->group(function () {
-        Route::livewire('settings/teams/{team}', 'pages::teams.edit')->name('teams.edit');
-    });
-});
-
-Route::get('.well-known/passkey-endpoints', function () {
-    return response()->json([
-        'enroll' => route('security.edit'),
-        'manage' => route('security.edit'),
-    ]);
-})->name('well-known.passkeys');

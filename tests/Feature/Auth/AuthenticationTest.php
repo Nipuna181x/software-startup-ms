@@ -2,101 +2,133 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
-use Laravel\Fortify\Features;
-use Laravel\Passkeys\Contracts\PasskeyLoginResponse;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_login_screen_can_be_rendered(): void
+    public function test_the_login_page_is_reachable(): void
     {
-        $response = $this->get(route('login'));
-
-        $response->assertOk();
+        $this->get(route('login'))->assertOk();
     }
 
-    public function test_users_can_authenticate_using_the_login_screen(): void
+    public function test_a_user_can_log_in_and_lands_in_their_own_dashboard(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['password' => 'secret-password']);
 
-        $response = $this->post(route('login.store'), [
+        $this->post(route('login.store'), [
             'email' => $user->email,
-            'password' => 'password',
-        ]);
+            'password' => 'secret-password',
+        ])->assertRedirect(route('dashboard', absolute: false));
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect(route('dashboard', absolute: false));
-
-        $this->assertAuthenticated();
+        $this->assertAuthenticatedAs($user);
     }
 
-    public function test_passkey_login_response_redirects_to_the_current_team_dashboard(): void
+    public function test_a_user_cannot_log_in_with_a_wrong_password(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['password' => 'secret-password']);
 
-        $request = Request::create(route('login', absolute: false), 'GET', server: [
-            'HTTP_ACCEPT' => 'application/json',
-        ]);
-        $request->setLaravelSession($this->app['session.store']);
-        $request->setUserResolver(fn () => $user);
-
-        $jsonResponse = app(PasskeyLoginResponse::class)->toResponse($request);
-
-        $this->assertSame(
-            route('dashboard', ['current_team' => $user->personalTeam()->slug]),
-            $jsonResponse->getData()->redirect,
-        );
-    }
-
-    public function test_users_can_not_authenticate_with_invalid_password(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->post(route('login.store'), [
+        $this->post(route('login.store'), [
             'email' => $user->email,
             'password' => 'wrong-password',
-        ]);
-
-        $response->assertSessionHasErrorsIn('email');
+        ])->assertSessionHasErrors('email');
 
         $this->assertGuest();
     }
 
-    public function test_users_with_two_factor_enabled_are_redirected_to_two_factor_challenge(): void
+    public function test_a_deactivated_user_cannot_log_in_and_is_told_why(): void
     {
-        if (! Features::canManageTwoFactorAuthentication()) {
-            $this->markTestSkipped('Two-factor authentication is not enabled.');
-        }
+        $user = User::factory()->inactive()->create(['password' => 'secret-password']);
 
-        Features::twoFactorAuthentication([
-            'confirm' => true,
-            'confirmPassword' => true,
-        ]);
-
-        $user = User::factory()->withTwoFactor()->create();
-
-        $response = $this->post(route('login.store'), [
+        $this->post(route('login.store'), [
             'email' => $user->email,
-            'password' => 'password',
+            'password' => 'secret-password',
+        ])->assertSessionHasErrors([
+            'email' => 'Your account has been deactivated. Please contact your administrator.',
         ]);
 
-        $response->assertRedirect(route('two-factor.login'));
         $this->assertGuest();
     }
 
-    public function test_users_can_logout(): void
+    public function test_a_user_of_a_deactivated_organization_cannot_log_in_and_is_told_why(): void
+    {
+        $organization = Organization::factory()->inactive()->create();
+        $user = User::factory()->for($organization)->create(['password' => 'secret-password']);
+
+        $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'secret-password',
+        ])->assertSessionHasErrors([
+            'email' => 'Your organization has been deactivated. Please contact Startsuite support.',
+        ]);
+
+        $this->assertGuest();
+    }
+
+    public function test_a_user_deactivated_mid_session_is_logged_out_on_the_next_request(): void
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post(route('logout'));
+        $this->actingAs($user)->get(route('dashboard'))->assertOk();
 
-        $response->assertRedirect(route('home'));
+        $user->forceFill(['is_active' => false])->save();
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertRedirect(route('login'));
+
+        $this->assertGuest();
+    }
+
+    public function test_a_user_whose_organization_is_deactivated_mid_session_is_logged_out(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get(route('dashboard'))->assertOk();
+
+        $user->organization->forceFill(['is_active' => false])->save();
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertRedirect(route('login'));
+
+        $this->assertGuest();
+    }
+
+    public function test_guests_cannot_reach_the_dashboard(): void
+    {
+        $this->get(route('dashboard'))->assertRedirect(route('login'));
+    }
+
+    public function test_a_user_can_log_out(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('logout'))->assertRedirect();
+
+        $this->assertGuest();
+    }
+
+    public function test_login_is_rate_limited_after_repeated_failures(): void
+    {
+        $user = User::factory()->create(['password' => 'secret-password']);
+
+        foreach (range(1, 5) as $attempt) {
+            $this->post(route('login.store'), [
+                'email' => $user->email,
+                'password' => 'wrong-password',
+            ]);
+        }
+
+        // The throttle now rejects even the correct password.
+        $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'secret-password',
+        ])->assertTooManyRequests();
 
         $this->assertGuest();
     }

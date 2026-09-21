@@ -6,6 +6,11 @@ use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
+/**
+ * Validation rules shared by the profile settings page.
+ *
+ * @phpstan-ignore trait.unused (used by a Livewire single-file component)
+ */
 trait ProfileValidationRules
 {
     /**

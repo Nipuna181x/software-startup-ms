@@ -1,21 +1,30 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
-        <div class="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div class="flex w-full max-w-sm flex-col gap-2">
-                <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                    <span class="flex h-9 w-9 mb-1 items-center justify-center rounded-md">
-                        <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
-                    </span>
-                    <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
-                </a>
-                <div class="flex flex-col gap-6">
+    <body class="min-h-screen bg-[color:var(--color-paper)] text-[color:var(--color-ink)] antialiased">
+        <div class="flex min-h-svh flex-col">
+            <header class="border-b border-[color:var(--color-rule)]">
+                <div class="mx-auto flex h-16 max-w-6xl items-center px-6">
+                    <a href="{{ route('home') }}" wire:navigate class="transition-opacity hover:opacity-70">
+                        <x-wordmark size="base" />
+                        <span class="sr-only">Startsuite home</span>
+                    </a>
+                </div>
+            </header>
+
+            <div class="flex flex-1 items-center justify-center px-6 py-12">
+                <div class="w-full {{ $wide ?? false ? 'max-w-4xl' : 'max-w-sm' }}">
                     {{ $slot }}
                 </div>
             </div>
+
+            <footer class="border-t border-[color:var(--color-rule)]">
+                <div class="mx-auto max-w-6xl px-6 py-6 text-xs text-zinc-400">
+                    &copy; {{ date('Y') }} Startsuite
+                </div>
+            </footer>
         </div>
 
         @persist('toast')
