@@ -86,4 +86,21 @@ class CallBusinessTypeManagementTest extends TestCase
 
         $this->assertDatabaseMissing('call_business_types', ['id' => $type->id]);
     }
+
+    public function test_a_business_type_card_links_to_its_businesses_page(): void
+    {
+        $user = User::factory()->create();
+        $category = CallCategory::factory()->for($user->organization)->create();
+        $type = $category->businessTypes()->create([
+            'organization_id' => $user->organization_id,
+            'name' => 'Cosmetics',
+        ]);
+
+        $expectedUrl = route('calling.businesses.index', [$category, $type]);
+
+        $this->actingAs($user)
+            ->get(route('calling.types.index', $category))
+            ->assertOk()
+            ->assertSee($expectedUrl, escape: false);
+    }
 }

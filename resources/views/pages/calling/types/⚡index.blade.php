@@ -198,12 +198,16 @@ new class extends Component {
                     wire:key="type-{{ $type->id }}"
                     class="group relative flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-300"
                 >
-                    <div class="flex-1">
+                    <a
+                        href="{{ route('calling.businesses.index', [$category, $type]) }}"
+                        wire:navigate
+                        class="flex-1"
+                    >
                         <h2 class="font-medium text-black">{{ $type->name }}</h2>
                         <p class="mt-3 text-sm text-black/50">
                             {{ trans_choice(':count business|:count businesses', $type->businesses_count, ['count' => $type->businesses_count]) }}
                         </p>
-                    </div>
+                    </a>
 
                     @can('update', $type)
                         <div class="mt-4 flex items-center gap-2 border-t border-zinc-100 pt-4">
