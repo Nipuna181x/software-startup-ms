@@ -61,4 +61,14 @@ class CallCategory extends Model
     {
         return $query->where('organization_id', $this->organization_id);
     }
+
+    /**
+     * Tell scoped route model binding which relation resolves the `{type}`
+     * route parameter, since it does not follow the default pluralization
+     * of the parameter name ("types") the relation is actually named.
+     */
+    protected function childRouteBindingRelationshipName($childType): string
+    {
+        return $childType === 'type' ? 'businessTypes' : parent::childRouteBindingRelationshipName($childType);
+    }
 }
