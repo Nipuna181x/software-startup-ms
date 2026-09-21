@@ -5,9 +5,9 @@
     {{ filled($title ?? null) ? $title.' - '.config('app.name', 'Laravel') : config('app.name', 'Laravel') }}
 </title>
 
-<link rel="icon" href="/favicon.ico" sizes="any">
+<meta name="description" content="Startsuite brings your software team together in a branded workspace. Discover our vision for connected planning, projects, code reviews, and documentation.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
 
 @fonts
 

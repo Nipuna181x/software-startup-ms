@@ -1,41 +1,13 @@
-@props([
-    'size' => 'base',
-    'tone' => 'ink',
-])
-
+@props(['size' => 'base', 'tone' => 'ink'])
 @php
-    $sizes = [
-        'xs' => 'text-xs',
-        'sm' => 'text-base',
-        'base' => 'text-xl',
-        'lg' => 'text-2xl',
-        'xl' => 'text-4xl',
-    ];
-
-    $tones = [
-        'ink' => 'text-black',
-        'muted' => 'text-black/45',
-        'inverse' => 'text-white',
-    ];
-
-    $accent = match ($tone) {
-        'muted' => 'bg-black/35',
-        'inverse' => 'bg-white',
-        default => 'bg-black',
-    };
-
-    $square = match ($size) {
-        'xs' => 'size-[3px] mb-[2px]',
-        'sm' => 'size-[4px] mb-[3px]',
-        'lg' => 'size-[6px] mb-[4px]',
-        'xl' => 'size-[9px] mb-[6px]',
-        default => 'size-[5px] mb-[4px]',
-    };
+    $sizes = ['xs' => 'text-xs', 'sm' => 'text-base', 'base' => 'text-xl', 'lg' => 'text-2xl', 'xl' => 'text-4xl'];
+    $tones = ['ink' => 'text-zinc-950', 'muted' => 'text-zinc-500', 'inverse' => 'text-white'];
 @endphp
-
-<span {{ $attributes->class(['wordmark inline-flex items-end', $sizes[$size] ?? $sizes['base'], $tones[$tone] ?? $tones['ink']]) }}>
-    <span class="wordmark-strong">Start</span><span class="wordmark-light">suite</span><span
-        aria-hidden="true"
-        class="{{ $accent }} {{ $square }} ml-[0.16em] shrink-0 rounded-[1px]"
-    ></span>
+<span {{ $attributes->class(['inline-flex items-center gap-2.5 font-semibold tracking-[-0.055em]', $sizes[$size] ?? $sizes['base'], $tones[$tone] ?? $tones['ink']]) }}>
+    <svg viewBox="0 0 36 36" fill="none" aria-hidden="true" class="h-[1.5em] w-[1.5em] shrink-0">
+        <path d="M18 3v30M3 18h30M7.4 7.4l21.2 21.2M7.4 28.6L28.6 7.4" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="18" cy="18" r="7" fill="currentColor"/>
+        <circle cx="18" cy="18" r="3" fill="#b8f66b"/>
+    </svg>
+    <span>startsuite<span class="text-lime-600">.</span></span>
 </span>

@@ -360,7 +360,7 @@ new #[Title('Users')] class extends Component {
 <div class="flex w-full flex-col gap-6">
     <header class="flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h1 class="display text-[30px]">{{ __('Users') }}</h1>
+            <h1 class="display text-[30px]">{{ __('Team members') }}</h1>
             <p class="mt-2 text-sm text-black/55">
                 {{ __('Everyone with access to :organization.', ['organization' => $organization?->name]) }}
             </p>
@@ -370,7 +370,7 @@ new #[Title('Users')] class extends Component {
             type="button"
             wire:click="addUser"
             data-test="add-user"
-            class="rounded-full px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
+            class="rounded-lg px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
             style="background:var(--brand);color:var(--brand-foreground)"
         >{{ __('Add user') }}</button>
     </header>
@@ -379,11 +379,11 @@ new #[Title('Users')] class extends Component {
         wire:model.live.debounce.300ms="search"
         icon="magnifying-glass"
         :placeholder="__('Search by name or email')"
-        class="max-w-sm"
+        class="max-w-sm" aria-label="Search team members"
         data-test="user-search"
     />
 
-    <div class="overflow-x-auto rounded-2xl bg-black/4 p-1.5">
+    <div class="overflow-x-auto rounded-2xl border border-zinc-200 bg-white p-3 sm:p-5">
         <flux:table :paginate="$this->users">
             <flux:table.columns>
                 <flux:table.column>{{ __('Name') }}</flux:table.column>
@@ -564,7 +564,7 @@ new #[Title('Users')] class extends Component {
                 <button
                     type="submit"
                     data-test="save-user"
-                    class="rounded-full px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
+                    class="rounded-lg px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
                     style="background:var(--brand);color:var(--brand-foreground)"
                     wire:loading.attr="disabled"
                     wire:target="save"
@@ -623,7 +623,7 @@ new #[Title('Users')] class extends Component {
                 <button
                     type="submit"
                     data-test="confirm-reset-password"
-                    class="rounded-full px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
+                    class="rounded-lg px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
                     style="background:var(--brand);color:var(--brand-foreground)"
                     wire:loading.attr="disabled"
                     wire:target="resetPassword"

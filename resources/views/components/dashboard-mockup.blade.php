@@ -1,125 +1,21 @@
-@props([
-    'company' => 'Northwind Logistics',
-    'color' => '#0f766e',
-    'initials' => 'NL',
-    'scale' => 'full',
-])
-
-@php
-    use App\Support\Color;
-
-    $ramp = Color::ramp($color);
-    $foreground = Color::foregroundFor($ramp['500']);
-
-    $style = collect([
-        '--m-500' => $ramp['500'],
-        '--m-600' => $ramp['600'],
-        '--m-50' => $ramp['50'],
-        '--m-100' => $ramp['100'],
-        '--m-200' => $ramp['200'],
-        '--m-fg' => $foreground,
-    ])->map(fn ($value, $name) => "{$name}:{$value}")->implode(';');
-
-    $rows = [
-        ['name' => 'Amara Osei', 'email' => 'amara@northwind.co', 'role' => 'Super Admin', 'active' => true],
-        ['name' => 'Tom Beckett', 'email' => 'tom@northwind.co', 'role' => 'User', 'active' => true],
-        ['name' => 'Priya Raman', 'email' => 'priya@northwind.co', 'role' => 'User', 'active' => true],
-        ['name' => 'Lukas Vogel', 'email' => 'lukas@northwind.co', 'role' => 'User', 'active' => false],
-    ];
-
-    $compact = $scale === 'compact';
-@endphp
-
-<div
-    style="{{ $style }}"
-    {{ $attributes->class(['overflow-hidden rounded-xl border border-black/8 bg-white']) }}
-    aria-hidden="true"
->
-    <div class="flex {{ $compact ? 'h-44' : 'h-full min-h-[320px]' }}">
-        {{-- Sidebar --}}
-        <div class="flex w-[34%] shrink-0 flex-col border-e border-black/6 bg-black/[0.03] {{ $compact ? 'p-2' : 'p-3' }}">
-            <div class="flex items-center gap-1.5">
-                <span
-                    class="grid shrink-0 place-items-center rounded font-semibold {{ $compact ? 'size-4 text-[6px]' : 'size-6 text-[9px]' }}"
-                    style="background:var(--m-500);color:var(--m-fg)"
-                >{{ $initials }}</span>
-                <span class="truncate font-semibold tracking-tight text-black/85 {{ $compact ? 'text-[7px]' : 'text-[11px]' }}">
-                    {{ $company }}
-                </span>
-            </div>
-
-            <div class="{{ $compact ? 'mt-0.5 ps-[22px] text-[5px]' : 'mt-1 ps-[30px] text-[7px]' }} text-black/40">
-                Startsuite
-            </div>
-
-            <div class="{{ $compact ? 'mt-2 space-y-0.5' : 'mt-4 space-y-1' }}">
-                @foreach (['Dashboard', 'Users', 'Settings'] as $index => $item)
-                    <div
-                        class="flex items-center gap-1.5 rounded {{ $compact ? 'px-1 py-0.5' : 'px-1.5 py-1' }}"
-                        @if ($index === 1) style="background:var(--m-100)" @endif
-                    >
-                        <span
-                            class="rounded-[2px] {{ $compact ? 'size-1.5' : 'size-2' }}"
-                            style="background:{{ $index === 1 ? 'var(--m-500)' : '#d4d4d8' }}"
-                        ></span>
-                        <span
-                            class="{{ $compact ? 'text-[6px]' : 'text-[8px]' }} {{ $index === 1 ? 'font-semibold' : 'text-black/50' }}"
-                            @if ($index === 1) style="color:var(--m-600)" @endif
-                        >{{ $item }}</span>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-
-        {{-- Main panel --}}
-        <div class="flex min-w-0 flex-1 flex-col {{ $compact ? 'p-2' : 'p-3' }}">
-            <div class="flex items-center justify-between">
-                <div class="font-semibold tracking-tight text-black/85 {{ $compact ? 'text-[7px]' : 'text-[10px]' }}">
-                    Users
+@props(['compact' => false])
+<div {{ $attributes->class(['product-scene relative isolate']) }} aria-label="Illustrative preview of the planned project workspace">
+    <div class="absolute inset-5 rounded-full bg-[#eff7de]/70 blur-3xl"></div>
+    <div class="relative ml-4 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_24px_70px_-30px_#25252540] sm:ml-10">
+        <div class="flex items-center gap-1.5 border-b border-zinc-100 px-5 py-4"><span class="size-2 rounded-full bg-[#ff9f8e]"></span><span class="size-2 rounded-full bg-[#ffe08a]"></span><span class="size-2 rounded-full bg-lime"></span><span class="ml-auto text-[10px] text-zinc-400">Workspace preview</span></div>
+        <div class="flex">
+            <div class="hidden w-14 shrink-0 flex-col items-center gap-6 border-r border-zinc-100 pt-6 sm:flex"><flux:icon icon="squares-2x2" class="size-5"/><flux:icon icon="folder" class="size-4 text-zinc-400"/><flux:icon icon="check-circle" class="size-4 text-zinc-400"/><flux:icon icon="users" class="size-4 text-zinc-400"/></div>
+            <div class="min-w-0 flex-1 p-5 sm:p-7">
+                <div class="flex items-center justify-between"><span class="text-[10px] tracking-wider text-zinc-400 uppercase">Product / Website</span><span class="rounded-full bg-[#eef8e4] px-2 py-1 text-[9px] text-green-800">On track</span></div>
+                <h3 class="mt-3 text-xl font-medium tracking-tight sm:text-2xl">Good ideas, taking shape.</h3><p class="mt-2 text-[11px] text-zinc-500">A shared plan. A clear next step.</p>
+                <div class="mt-6 flex items-center justify-between border-b border-zinc-100 pb-3 text-[10px]"><span class="font-medium">Board view <span class="ml-4 font-normal text-zinc-400">Overview</span></span><span class="rounded bg-lime px-2 py-1">+ New task</span></div>
+                <div class="mt-4 grid grid-cols-2 gap-3 text-[10px] sm:grid-cols-3">
+                    @foreach ([['To do', 'Define the product vision', 'Planning', '#f0ebff'], ['In progress', 'Design a better experience', 'Design', '#fff3d4'], ['Done', 'Bring the team together', 'Team', '#e9f4ff']] as $column)
+                        <div @class(['rounded-lg bg-zinc-50 p-2.5', 'hidden sm:block' => $loop->last])><p class="mb-3 text-zinc-500">{{ $column[0] }} <span class="float-right">1</span></p><div class="rounded-lg border border-zinc-100 bg-white p-3 shadow-xs"><span class="rounded px-1.5 py-1 text-[8px]" style="background: {{ $column[3] }}">{{ $column[2] }}</span><p class="mt-3 min-h-10 font-medium leading-4">{{ $column[1] }}</p><div class="mt-4 flex items-center justify-between"><span class="grid size-5 place-items-center rounded-full bg-[#eee9e2] text-[8px]">{{ ['AM', 'JL', 'SK'][$loop->index] }}</span><flux:icon icon="chat-bubble-oval-left" class="size-3 text-zinc-400"/></div></div></div>
+                    @endforeach
                 </div>
-                <div
-                    class="rounded font-medium {{ $compact ? 'px-1 py-[2px] text-[5px]' : 'px-1.5 py-[3px] text-[7px]' }}"
-                    style="background:var(--m-500);color:var(--m-fg)"
-                >Add user</div>
-            </div>
-
-            <div class="{{ $compact ? 'mt-1.5' : 'mt-2.5' }} overflow-hidden rounded border border-black/8">
-                <div class="flex items-center gap-2 border-b border-black/6 bg-black/[0.03] {{ $compact ? 'px-1.5 py-[3px]' : 'px-2 py-1' }}">
-                    <div class="flex-1 {{ $compact ? 'text-[5px]' : 'text-[7px]' }} font-medium text-black/50">Name</div>
-                    <div class="w-10 {{ $compact ? 'text-[5px]' : 'text-[7px]' }} font-medium text-black/50">Role</div>
-                    <div class="w-8 {{ $compact ? 'text-[5px]' : 'text-[7px]' }} font-medium text-black/50">Status</div>
-                </div>
-
-                @foreach ($rows as $row)
-                    @if (! ($compact && $loop->index > 2))
-                        <div class="flex items-center gap-2 border-b border-black/5 last:border-0 {{ $compact ? 'px-1.5 py-[3px]' : 'px-2 py-1.5' }}">
-                            <div class="flex min-w-0 flex-1 items-center gap-1.5">
-                                <span
-                                    class="grid shrink-0 place-items-center rounded-full font-semibold {{ $compact ? 'size-2.5 text-[4px]' : 'size-4 text-[6px]' }}"
-                                    style="background:var(--m-50);color:var(--m-600)"
-                                >{{ Str::initials($row['name'], true) }}</span>
-                                <div class="min-w-0">
-                                    <div class="truncate font-medium text-black/70 {{ $compact ? 'text-[5px]' : 'text-[7px]' }}">{{ $row['name'] }}</div>
-                                    @unless ($compact)
-                                        <div class="truncate text-[6px] text-black/40">{{ $row['email'] }}</div>
-                                    @endunless
-                                </div>
-                            </div>
-                            <div class="w-10 {{ $compact ? 'text-[5px]' : 'text-[7px]' }} text-black/50">{{ $row['role'] }}</div>
-                            <div class="w-8">
-                                <span
-                                    class="inline-block rounded-full {{ $compact ? 'px-1 py-[1px] text-[4px]' : 'px-1.5 py-[1px] text-[6px]' }} font-medium"
-                                    @if ($row['active'])
-                                        style="background:var(--m-50);color:var(--m-600)"
-                                    @else
-                                        style="background:#f4f4f5;color:#a1a1aa"
-                                    @endif
-                                >{{ $row['active'] ? 'Active' : 'Off' }}</span>
-                            </div>
-                        </div>
-                    @endif
-                @endforeach
             </div>
         </div>
     </div>
+    <div class="relative -mt-5 mr-12 flex w-fit items-center gap-4 rounded-xl border border-zinc-100 bg-white px-5 py-4 shadow-[0_12px_40px_-15px_#0003] sm:-mt-7"><span class="grid size-10 place-items-center rounded-full bg-lime"><flux:icon icon="check" class="size-5"/></span><div><p class="text-sm font-medium">Small steps. Big progress.</p><p class="mt-1 text-[11px] text-zinc-500">From the first idea to the final release.</p></div></div>
 </div>

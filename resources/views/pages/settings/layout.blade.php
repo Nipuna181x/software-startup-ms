@@ -1,5 +1,5 @@
-<div class="flex items-start gap-10 max-md:flex-col">
-    <nav class="w-full pb-2 md:w-[210px]" aria-label="{{ __('Settings') }}">
+<div class="flex items-start gap-6 max-md:flex-col">
+    <nav class="w-full shrink-0 pb-2 md:w-[175px]" aria-label="{{ __('Settings') }}">
         <ul class="flex gap-1.5 md:flex-col">
             @php($tabs = [['route' => 'profile.edit', 'label' => __('Profile'), 'show' => true], ['route' => 'organization.edit', 'label' => __('Organization'), 'show' => auth()->user()?->isSuperAdmin()]])
 
@@ -25,7 +25,7 @@
         </ul>
     </nav>
 
-    <div class="min-w-0 flex-1 self-stretch">
+    <div class="settings-card min-w-0 flex-1 self-stretch">
         <h2 class="text-[17px] font-medium tracking-tight">{{ $heading ?? '' }}</h2>
         <p class="mt-1.5 text-sm text-black/55">{{ $subheading ?? '' }}</p>
 

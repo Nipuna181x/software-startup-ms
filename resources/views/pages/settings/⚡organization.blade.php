@@ -246,7 +246,7 @@ new #[Title('Organization settings')] class extends Component {
                 <button
                     type="submit"
                     data-test="save-organization"
-                    class="self-start rounded-full px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
+                    class="self-start rounded-lg px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
                     style="background:var(--brand);color:var(--brand-foreground)"
                     wire:loading.attr="disabled"
                     wire:target="save"

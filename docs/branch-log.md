@@ -9,3 +9,5 @@ never from `main` (except the first).
 - `feature/02-ui-redesign` (based on `feat/user-auth`): redesign the public site
   and dashboard in the Imagine/PrebuiltUI style — Geist typography, monochrome
   palette with opacity tiers, soft radii and restrained motion.
+
+- `feature/03-workspace-redesign` (based on `feature/02-ui-redesign`): reference-inspired public website, workspace UI, new identity and platform administration.
