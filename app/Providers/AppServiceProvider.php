@@ -99,6 +99,15 @@ class AppServiceProvider extends ServiceProvider
         );
 
         Navigation::register(
+            label: 'Calling',
+            route: 'calling.categories.index',
+            icon: 'phone',
+            group: 'Platform',
+            pattern: 'calling.*',
+            order: 15,
+        );
+
+        Navigation::register(
             label: 'Users',
             route: 'users.index',
             icon: 'users',

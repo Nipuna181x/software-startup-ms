@@ -16,6 +16,7 @@ Route::middleware(['auth', 'active'])->group(function () {
 });
 
 require __DIR__.'/settings.php';
+require __DIR__.'/calling.php';
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('login', [AdminSessionController::class, 'create'])->name('login');
