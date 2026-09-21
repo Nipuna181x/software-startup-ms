@@ -66,6 +66,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Calling Module: Business Screenshots
+    |--------------------------------------------------------------------------
+    |
+    | Screenshots live on the private `local` disk (storage/app/private), not
+    | the public disk used for logos, because they may contain a business's
+    | private contact details. They are served through an authorized route
+    | that checks the owning business belongs to the viewer's organization.
+    |
+    */
+
+    'business_screenshot' => [
+        'disk' => 'local',
+        'directory' => 'business-screenshots',
+        'max_kilobytes' => 4096,
+        'mimes' => ['png', 'jpg', 'jpeg', 'webp'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Demo Seed Data
     |--------------------------------------------------------------------------
     |
