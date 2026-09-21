@@ -12,3 +12,4 @@ never from `main` (except the first).
 
 - `feature/03-workspace-redesign` (based on `feature/02-ui-redesign`): reference-inspired public website, workspace UI, new identity and platform administration.
 - `feature/04-calling-categories` (based on `feature/03-workspace-redesign`): Calling module part 1 — call categories and business types (tables, policies, CRUD pages, sidebar entry).
+- `feature/05-calling-businesses` (based on `feature/04-calling-categories`): Calling module part 2 — full business records (contact fields, multiple phone numbers, screenshots), duplicate phone detection, and private per-organization screenshot storage.
