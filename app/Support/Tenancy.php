@@ -19,12 +19,19 @@ class Tenancy
 
     private static bool $disabled = false;
 
+    private static bool $resolvingUser = false;
+
     /**
      * Get the organization id that queries should be constrained to.
+     *
+     * Resolving the authenticated user runs a User query, which re-enters this
+     * method through the global scope. The re-entrancy guard lets that inner
+     * query run unscoped: it looks the user up by primary key from the session,
+     * so it needs no tenant filter of its own.
      */
     public static function currentOrganizationId(): ?int
     {
-        if (self::$disabled) {
+        if (self::$disabled || self::$resolvingUser) {
             return null;
         }
 
@@ -32,7 +39,13 @@ class Tenancy
             return self::$organizationId;
         }
 
-        return Auth::user()?->organization_id;
+        self::$resolvingUser = true;
+
+        try {
+            return Auth::user()?->organization_id;
+        } finally {
+            self::$resolvingUser = false;
+        }
     }
 
     /**
@@ -101,5 +114,6 @@ class Tenancy
     {
         self::$organizationId = null;
         self::$disabled = false;
+        self::$resolvingUser = false;
     }
 }
