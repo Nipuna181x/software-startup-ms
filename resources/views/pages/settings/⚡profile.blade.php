@@ -1,19 +1,24 @@
 <?php
 
+use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new #[Title('Profile settings')] class extends Component {
-    use ProfileValidationRules;
+    use PasswordValidationRules, ProfileValidationRules;
 
     public string $name = '';
+
     public string $email = '';
+
+    public string $current_password = '';
+
+    public string $password = '';
+
+    public string $password_confirmation = '';
 
     /**
      * Mount the component.
@@ -25,7 +30,7 @@ new #[Title('Profile settings')] class extends Component {
     }
 
     /**
-     * Update the profile information for the currently authenticated user.
+     * Update the profile information for the current user.
      */
     public function updateProfileInformation(): void
     {
@@ -33,92 +38,97 @@ new #[Title('Profile settings')] class extends Component {
 
         $validated = $this->validate($this->profileRules($user->id));
 
-        $user->fill($validated);
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
+        $user->fill($validated)->save();
 
         Flux::toast(variant: 'success', text: __('Profile updated.'));
     }
 
     /**
-     * Send an email verification notification to the current user.
+     * Change the current user's password.
      */
-    public function resendVerificationNotification(): void
+    public function updatePassword(): void
     {
-        $user = Auth::user();
+        $validated = $this->validate([
+            'current_password' => $this->currentPasswordRules(),
+            'password' => $this->passwordRules(),
+        ]);
 
-        if ($user->hasVerifiedEmail()) {
-            $this->redirectIntended(default: route('dashboard', absolute: false));
+        Auth::user()->update(['password' => $validated['password']]);
 
-            return;
-        }
+        $this->reset(['current_password', 'password', 'password_confirmation']);
 
-        $user->sendEmailVerificationNotification();
-
-        Session::flash('status', 'verification-link-sent');
-    }
-
-    #[Computed]
-    public function hasUnverifiedEmail(): bool
-    {
-        return Auth::user() instanceof MustVerifyEmail && ! Auth::user()->hasVerifiedEmail();
-    }
-
-    #[Computed]
-    public function showDeleteUser(): bool
-    {
-        return ! Auth::user() instanceof MustVerifyEmail
-            || (Auth::user() instanceof MustVerifyEmail && Auth::user()->hasVerifiedEmail());
+        Flux::toast(variant: 'success', text: __('Password changed.'));
     }
 }; ?>
 
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <flux:heading level="2" class="sr-only">{{ __('Profile settings') }}</flux:heading>
-
-    <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
+    <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Your name, email address and password')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
+            <flux:input wire:model="name" :label="__('Name')" type="text" required autocomplete="name" />
 
-            <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+            <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
 
-                @if ($this->hasUnverifiedEmail)
-                    <div>
-                        <flux:text class="mt-4">
-                            {{ __('Your email address is unverified.') }}
-
-                            <flux:link class="text-sm cursor-pointer" wire:click.prevent="resendVerificationNotification">
-                                {{ __('Click here to re-send the verification email.') }}
-                            </flux:link>
-                        </flux:text>
-
-                        @if (session('status') === 'verification-link-sent')
-                            <flux:text class="mt-2 font-medium !dark:text-green-400 !text-green-600">
-                                {{ __('A new verification link has been sent to your email address.') }}
-                            </flux:text>
-                        @endif
-                    </div>
-                @endif
-            </div>
-
-            <div class="flex items-center gap-4">
-                <div class="flex items-center justify-end">
-                    <flux:button variant="primary" type="submit" class="w-full" data-test="update-profile-button">
-                        {{ __('Save') }}
-                    </flux:button>
-                </div>
-
-            </div>
+            <button
+                type="submit"
+                data-test="update-profile-button"
+                class="rounded-lg px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
+                style="background:var(--brand);color:var(--brand-foreground)"
+                wire:loading.attr="disabled"
+                wire:target="updateProfileInformation"
+            >
+                <span wire:loading.remove wire:target="updateProfileInformation">{{ __('Save') }}</span>
+                <span wire:loading wire:target="updateProfileInformation">{{ __('Saving…') }}</span>
+            </button>
         </form>
 
-        @if ($this->showDeleteUser)
-            <livewire:pages::settings.delete-user-form />
-        @endif
+        <flux:separator class="my-8" variant="subtle" />
+
+        <form wire:submit="updatePassword" class="w-full space-y-6">
+            <h3 class="text-[15px] font-medium tracking-tight">{{ __('Change password') }}</h3>
+
+            <flux:input
+                wire:model="current_password"
+                :label="__('Current password')"
+                type="password"
+                viewable
+                required
+                autocomplete="current-password"
+                data-test="current-password"
+            />
+
+            <flux:input
+                wire:model="password"
+                :label="__('New password')"
+                type="password"
+                viewable
+                required
+                autocomplete="new-password"
+                data-test="new-password"
+            />
+
+            <flux:input
+                wire:model="password_confirmation"
+                :label="__('Confirm new password')"
+                type="password"
+                viewable
+                required
+                autocomplete="new-password"
+                data-test="new-password-confirmation"
+            />
+
+            <button
+                type="submit"
+                data-test="update-password-button"
+                class="rounded-lg px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-85 disabled:opacity-50"
+                style="background:var(--brand);color:var(--brand-foreground)"
+                wire:loading.attr="disabled"
+                wire:target="updatePassword"
+            >
+                <span wire:loading.remove wire:target="updatePassword">{{ __('Change password') }}</span>
+                <span wire:loading wire:target="updatePassword">{{ __('Changing…') }}</span>
+            </button>
+        </form>
     </x-pages::settings.layout>
 </section>

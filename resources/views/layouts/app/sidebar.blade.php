@@ -1,105 +1,58 @@
+@php
+    $user = auth()->user();
+    $groups = $user ? App\Support\Navigation::for($user) : collect();
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
-    <head>
-        @include('partials.head')
-    </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:sidebar.header>
-                <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
-                <flux:sidebar.collapse class="lg:hidden" />
-            </flux:sidebar.header>
-
-            <livewire:team-switcher />
-
-            <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
-            </flux:sidebar.nav>
-
-            <flux:spacer />
-
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
-
-            <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
-        </flux:sidebar>
-
-        <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden">
-            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
-
-            <flux:spacer />
-
-            <flux:dropdown position="top" align="end">
-                <flux:profile
-                    :initials="auth()->user()->initials()"
-                    icon-trailing="chevron-down"
-                />
-
-                <flux:menu>
-                    <flux:menu.radio.group>
-                        <div class="p-0 text-sm font-normal">
-                            <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                                <flux:avatar
-                                    :name="auth()->user()->name"
-                                    :initials="auth()->user()->initials()"
-                                />
-
-                                <div class="grid flex-1 text-start text-sm leading-tight">
-                                    <flux:heading class="truncate">{{ auth()->user()->name }}</flux:heading>
-                                    <flux:text class="truncate">{{ auth()->user()->email }}</flux:text>
-                                </div>
-                            </div>
-                        </div>
-                    </flux:menu.radio.group>
-
-                    <flux:menu.separator />
-
-                    <flux:menu.radio.group>
-                        <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
-                            {{ __('Settings') }}
-                        </flux:menu.item>
-                    </flux:menu.radio.group>
-
-                    <flux:menu.separator />
-
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
-                        <flux:menu.item
-                            as="button"
-                            type="submit"
-                            icon="arrow-right-start-on-rectangle"
-                            class="w-full cursor-pointer"
-                            data-test="logout-button"
-                        >
-                            {{ __('Log out') }}
-                        </flux:menu.item>
-                    </form>
-                </flux:menu>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>@include('partials.head')</head>
+<body class="min-h-screen bg-[#fafbf9] text-zinc-950 antialiased">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <flux:sidebar sticky collapsible="mobile" class="workspace-sidebar">
+        <flux:sidebar.header class="!px-4 !pt-6 !pb-5">
+            <a href="{{ route('dashboard') }}" wire:navigate aria-label="Startsuite dashboard"><x-wordmark /></a>
+            <flux:sidebar.collapse class="lg:hidden" />
+        </flux:sidebar.header>
+        <div class="mx-3 flex min-w-0 items-center gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-3">
+            @if ($organization?->logoUrl())
+                <img src="{{ $organization->logoUrl() }}" alt="{{ $organization->name }}" class="size-9 shrink-0 rounded-lg object-cover" />
+            @else
+                <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-subtle text-xs font-semibold text-brand-active">{{ $organization?->initials() }}</span>
+            @endif
+            <div class="min-w-0"><p class="truncate text-xs font-medium">{{ $organization?->name }}</p><p class="mt-1 text-[10px] text-zinc-500">Your workspace</p></div>
+        </div>
+        <flux:sidebar.nav class="!px-3 !pt-7">
+            <p class="mb-3 px-3 text-[10px] font-medium tracking-[0.15em] text-zinc-400 uppercase">Workspace</p>
+            @foreach ($groups as $heading => $items)
+                @foreach ($items as $item)
+                    <a href="{{ route($item['route']) }}" wire:navigate class="workspace-nav" @if(request()->routeIs(explode('|', $item['pattern']))) aria-current="page" @endif>
+                        <flux:icon :icon="$item['icon']" variant="outline" class="size-5 shrink-0" />{{ $item['label'] === 'Users' ? __('Team members') : __($item['label']) }}
+                    </a>
+                @endforeach
+            @endforeach
+            <p class="mt-8 mb-3 px-3 text-[10px] font-medium tracking-[0.15em] text-zinc-400 uppercase">On the roadmap</p>
+            @foreach ([['squares-2x2', 'Smart Planner'], ['view-columns', 'Projects'], ['code-bracket', 'Code reviews'], ['bug-ant', 'Issues'], ['book-open', 'Knowledge base']] as [$icon, $label])
+                <div class="flex items-center gap-3 px-3 py-2.5 text-[13px] text-zinc-400"><flux:icon :icon="$icon" class="size-4 shrink-0"/><span class="flex-1">{{ $label }}</span><span class="text-[9px]">Soon</span></div>
+            @endforeach
+        </flux:sidebar.nav>
+        <flux:spacer />
+        <div class="mt-4 border-t border-zinc-100 px-3 pt-4 pb-3">
+            <flux:dropdown position="top" align="start" class="w-full">
+                <button class="flex w-full items-center gap-3 rounded-xl p-2 text-start hover:bg-zinc-50" aria-label="Open account menu">
+                    <span class="grid size-9 shrink-0 place-items-center rounded-full bg-[#eee9e2] text-xs font-medium">{{ $user->initials() }}</span>
+                    <span class="min-w-0 flex-1"><span class="block truncate text-xs font-medium">{{ $user->name }}</span><span class="mt-1 block text-[10px] text-zinc-500">{{ $user->role->label() }}</span></span><flux:icon icon="chevron-up-down" class="size-4 text-zinc-400"/>
+                </button>
+                <x-user-menu />
             </flux:dropdown>
-        </flux:header>
-
-        {{ $slot }}
-
-        <livewire:create-team-modal />
-
-        @persist('toast')
-            <flux:toast.group>
-                <flux:toast />
-            </flux:toast.group>
-        @endpersist
-
-        @fluxScripts
-    </body>
+        </div>
+    </flux:sidebar>
+    <flux:header class="border-b border-zinc-200 bg-white lg:hidden">
+        <flux:sidebar.toggle icon="bars-2" inset="left" aria-label="Open navigation" />
+        <span class="min-w-0 truncate text-sm font-medium">{{ $organization?->name }}</span>
+        <flux:spacer />
+        <flux:dropdown position="bottom" align="end"><flux:profile :initials="$user->initials()" icon-trailing="chevron-down"/><x-user-menu /></flux:dropdown>
+    </flux:header>
+    {{ $slot }}
+    @persist('toast')<flux:toast.group><flux:toast /></flux:toast.group>@endpersist
+    @fluxScripts
+</body>
 </html>

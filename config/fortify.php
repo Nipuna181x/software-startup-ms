@@ -161,17 +161,12 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Public self-registration is deliberately disabled: the only way to
+        // create an account is the organization registration flow, or a Super
+        // Admin adding a user inside their own organization.
         Features::resetPasswords(),
-        Features::emailVerification(),
-        Features::twoFactorAuthentication([
-            'confirm' => true,
-            'confirmPassword' => true,
-            // 'window' => 0
-        ]),
-        Features::passkeys([
-            'confirmPassword' => true,
-        ]),
+        Features::updateProfileInformation(),
+        Features::updatePasswords(),
     ],
 
 ];
