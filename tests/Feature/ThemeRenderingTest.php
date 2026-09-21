@@ -61,6 +61,18 @@ class ThemeRenderingTest extends TestCase
             ->assertSee('--brand-foreground:#ffffff', escape: false);
     }
 
+    public function test_invalid_stored_brand_colors_fall_back_to_a_readable_theme(): void
+    {
+        $organization = Organization::factory()->create(['primary_color' => '#']);
+        $user = User::factory()->superAdmin()->for($organization)->create();
+        config(['startsuite.default_organization_color' => '#1d4ed8']);
+
+        $this->actingAs($user)->get(route('users.index'))
+            ->assertOk()
+            ->assertSee('--brand:#1d4ed8;', escape: false)
+            ->assertSee('--brand-foreground:#ffffff', escape: false);
+    }
+
     public function test_the_full_shade_ramp_is_emitted(): void
     {
         $organization = Organization::factory()->create(['primary_color' => '#0f766e']);

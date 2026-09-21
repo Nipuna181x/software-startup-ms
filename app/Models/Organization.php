@@ -102,7 +102,10 @@ class Organization extends Model
      */
     public function themeVariables(): array
     {
-        $ramp = Color::ramp($this->primary_color);
+        $color = Color::isValidHex($this->primary_color)
+            ? $this->primary_color
+            : config('startsuite.default_organization_color');
+        $ramp = Color::ramp($color);
 
         $variables = [];
 

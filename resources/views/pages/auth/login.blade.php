@@ -45,7 +45,7 @@
             <button
                 type="submit"
                 data-test="login-button"
-                class="w-full rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-80"
+                class="button-lime w-full"
             >{{ __('Log in') }}</button>
         </form>
 

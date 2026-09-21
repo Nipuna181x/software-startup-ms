@@ -317,7 +317,7 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
                 <button
                     type="submit"
                     data-test="register-button"
-                    class="w-full rounded-full bg-black px-6 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+                    class="button-lime w-full disabled:opacity-50"
                     wire:loading.attr="disabled"
                     wire:target="register"
                 >

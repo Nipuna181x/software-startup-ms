@@ -131,7 +131,6 @@ select:focus[data-flux-control] {
     .workspace-nav { @apply flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-950; }
     .workspace-nav[aria-current=page] { background: var(--brand-subtle); color: var(--brand-active); font-weight: 500; }
     .auth-surface { --brand: #b8f66b; --brand-hover: #a9e957; --brand-foreground: #171717; }
-    .auth-surface button[type=submit] { @apply rounded-lg bg-lime text-zinc-950; }
     .settings-card { @apply rounded-2xl border border-zinc-200 bg-white p-5 sm:p-8; }
 }
 
