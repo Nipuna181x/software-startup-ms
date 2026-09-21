@@ -4,7 +4,7 @@
 <body class="auth-surface min-h-screen bg-[#f0f0ed] text-zinc-950 antialiased">
     <a href="#main-content" class="skip-link">Skip to content</a>
     <div class="mx-auto flex min-h-svh max-w-[1600px] flex-col p-4 sm:p-7">
-        <header class="flex items-center justify-between gap-4 px-2 py-4 sm:px-5"><a href="{{ route('home') }}" wire:navigate aria-label="Startsuite home"><x-wordmark /></a><a href="{{ route('home') }}" wire:navigate class="text-xs text-zinc-600 hover:text-zinc-950">Back to website ↗</a></header>
+        <header class="flex items-center justify-between gap-4 px-2 py-4 sm:px-5"><a href="{{ route('home') }}" wire:navigate aria-label="Startsuite home"><x-wordmark /></a><a href="{{ route('home') }}" wire:navigate class="text-xs text-zinc-600 hover:text-zinc-950">Back to website <flux:icon icon="arrow-up-right" class="inline-block size-4 shrink-0 align-text-bottom" aria-hidden="true" /></a></header>
         <main id="main-content" class="my-auto py-8">
             @if ($wide ?? false)
                 <div class="mx-auto max-w-5xl rounded-3xl border border-zinc-200 bg-white p-6 sm:p-12">{{ $slot }}</div>

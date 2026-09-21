@@ -78,7 +78,7 @@ new #[Title('Dashboard')] class extends Component {
             </div>
         </section>
         <section class="mt-8">
-            <header class="flex flex-wrap items-center justify-between gap-3"><h2 class="text-lg font-medium tracking-tight">Recently added</h2>@can('super-admin')<a href="{{ route('users.index') }}" wire:navigate class="text-xs font-medium text-zinc-500 hover:text-zinc-950">Manage team ↗</a>@endcan</header>
+            <header class="flex flex-wrap items-center justify-between gap-3"><h2 class="text-lg font-medium tracking-tight">Recently added</h2>@can('super-admin')<a href="{{ route('users.index') }}" wire:navigate class="text-xs font-medium text-zinc-500 hover:text-zinc-950">Manage team <flux:icon icon="arrow-up-right" class="inline-block size-4 shrink-0 align-text-bottom" aria-hidden="true" /></a>@endcan</header>
             <ul class="mt-4 divide-y divide-zinc-100">
                 @foreach ($this->recentMembers as $member)
                     <li wire:key="member-{{ $member->id }}" class="flex items-center gap-3 py-4"><span class="grid size-10 shrink-0 place-items-center rounded-full bg-brand-subtle text-xs font-medium text-brand-active">{{ $member->initials() }}</span><div class="min-w-0 flex-1"><p class="truncate text-sm font-medium">{{ $member->name }}</p><p class="mt-1 truncate text-xs text-zinc-500">{{ $member->email }}</p></div><span class="hidden rounded-full bg-white px-3 py-1.5 text-[10px] text-zinc-500 sm:block">{{ $member->role->label() }}</span><span class="flex items-center gap-1.5 text-[10px] text-zinc-500"><span @class(['size-1.5 rounded-full', 'bg-emerald-500' => $member->is_active, 'bg-zinc-400' => !$member->is_active])></span>{{ $member->is_active ? 'Active' : 'Inactive' }}</span></li>

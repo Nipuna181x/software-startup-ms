@@ -35,7 +35,7 @@
             @endforeach
         </flux:sidebar.nav>
         <flux:spacer />
-        <div class="mx-3 mt-8 rounded-xl bg-[#f1f6eb] p-4"><span class="grid size-8 place-items-center rounded-full bg-white"><flux:icon icon="sparkles" class="size-4"/></span><p class="mt-3 text-sm font-medium">Good work starts here.</p><p class="mt-2 text-xs leading-5 text-zinc-500">Make this workspace feel like home.</p><a href="{{ route('profile.edit') }}" wire:navigate class="mt-4 inline-flex items-center gap-2 text-xs font-medium">Complete your profile <span aria-hidden="true">↗</span></a></div>
+        <div class="mx-3 mt-8 rounded-xl bg-[#f1f6eb] p-4"><span class="grid size-8 place-items-center rounded-full bg-white"><flux:icon icon="sparkles" class="size-4"/></span><p class="mt-3 text-sm font-medium">Good work starts here.</p><p class="mt-2 text-xs leading-5 text-zinc-500">Make this workspace feel like home.</p><a href="{{ route('profile.edit') }}" wire:navigate class="mt-4 inline-flex items-center gap-2 text-xs font-medium">Complete your profile <flux:icon icon="arrow-up-right" class="size-4 shrink-0" aria-hidden="true" /></a></div>
         <div class="mt-4 border-t border-zinc-100 px-3 pt-4 pb-3">
             <flux:dropdown position="top" align="start" class="w-full">
                 <button class="flex w-full items-center gap-3 rounded-xl p-2 text-start hover:bg-zinc-50" aria-label="Open account menu">
