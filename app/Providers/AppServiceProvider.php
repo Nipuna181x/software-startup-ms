@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Support\Navigation;
-use App\Support\OrganizationTheme;
+use App\Support\OrganizationContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->scoped(OrganizationTheme::class);
+        $this->app->scoped(OrganizationContext::class);
     }
 
     /**
@@ -35,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Share the viewer's organization and its theme with every view.
+     * Share the viewer's organization with every view.
      *
      * A composer rather than middleware, so the variables also exist when a
      * Livewire component is rendered outside the HTTP middleware stack.
@@ -43,12 +43,9 @@ class AppServiceProvider extends ServiceProvider
     protected function configureViewSharing(): void
     {
         View::composer('*', function ($view): void {
-            $theme = app(OrganizationTheme::class);
+            $context = app(OrganizationContext::class);
 
-            $view->with([
-                'organization' => $theme->organization(),
-                'themeStyle' => $theme->style(),
-            ]);
+            $view->with('organization', $context->organization());
         });
     }
 

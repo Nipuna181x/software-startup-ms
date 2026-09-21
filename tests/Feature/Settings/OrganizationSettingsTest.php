@@ -21,7 +21,9 @@ class OrganizationSettingsTest extends TestCase
         $this->actingAs($admin)
             ->get(route('organization.edit'))
             ->assertOk()
-            ->assertSee('Organization');
+            ->assertSee('Organization')
+            ->assertDontSee('Theme colour')
+            ->assertDontSee('data-test="color-input"', escape: false);
     }
 
     public function test_a_regular_user_gets_a_403_from_organization_settings(): void
@@ -33,35 +35,21 @@ class OrganizationSettingsTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_a_super_admin_can_change_the_name_and_theme_colour(): void
+    public function test_a_super_admin_can_change_the_name_without_changing_the_legacy_colour_value(): void
     {
         $admin = User::factory()->superAdmin()->create();
+        $originalColor = $admin->organization->primary_color;
 
         Livewire::actingAs($admin)
             ->test('pages::settings.organization')
             ->set('name', 'Renamed Company')
-            ->set('primaryColor', '#b91c1c')
             ->call('save')
             ->assertHasNoErrors();
 
         $organization = $admin->organization->refresh();
 
         $this->assertSame('Renamed Company', $organization->name);
-        $this->assertSame('#b91c1c', $organization->primary_color);
-    }
-
-    public function test_it_rejects_a_theme_colour_that_cannot_be_read_on_white(): void
-    {
-        $admin = User::factory()->superAdmin()->create();
-        $original = $admin->organization->primary_color;
-
-        Livewire::actingAs($admin)
-            ->test('pages::settings.organization')
-            ->set('primaryColor', '#ffffff')
-            ->call('save')
-            ->assertHasErrors('primaryColor');
-
-        $this->assertSame($original, $admin->organization->refresh()->primary_color);
+        $this->assertSame($originalColor, $organization->primary_color);
     }
 
     public function test_a_super_admin_can_replace_and_remove_the_logo(): void
@@ -107,7 +95,7 @@ class OrganizationSettingsTest extends TestCase
         $this->assertNull($admin->organization->refresh()->logo_path);
     }
 
-    public function test_the_theme_colour_reaches_the_dashboard(): void
+    public function test_the_legacy_theme_colour_does_not_reach_the_dashboard(): void
     {
         $organization = Organization::factory()->create(['primary_color' => '#0f766e']);
         $admin = User::factory()->superAdmin()->for($organization)->create();
@@ -115,7 +103,7 @@ class OrganizationSettingsTest extends TestCase
         $this->actingAs($admin)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('--brand:#0f766e', escape: false);
+            ->assertDontSee('#0f766e');
     }
 
     public function test_the_sidebar_shows_the_company_name_and_the_startsuite_wordmark(): void

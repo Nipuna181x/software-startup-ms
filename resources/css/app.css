@@ -33,12 +33,7 @@
     --color-rule: #e5e7eb;
 }
 
-/*
- * Organization theme.
- *
- * ShareOrganizationTheme sets these per request from the organization's chosen
- * colour, so dashboard markup only ever refers to the variables below.
- */
+/* Shared Startsuite theme used by the public site, workspace, and admin panel. */
 @theme inline {
     --color-brand-50: var(--brand-50);
     --color-brand-100: var(--brand-100);
@@ -60,20 +55,20 @@
 
 :root {
     color-scheme: light;
-    --brand-50: #eff4ff;
-    --brand-100: #dbe6fe;
-    --brand-200: #bfd2fe;
-    --brand-300: #93b4fd;
-    --brand-400: #6090fa;
-    --brand-500: #1d4ed8;
-    --brand-600: #1a45be;
-    --brand-700: #153a9f;
-    --brand-800: #112e82;
-    --brand-900: #0d2461;
-    --brand: var(--brand-500);
-    --brand-hover: var(--brand-600);
-    --brand-active: var(--brand-700);
-    --brand-foreground: #ffffff;
+    --brand-50: #f8ffed;
+    --brand-100: #efffd9;
+    --brand-200: #ddfbb8;
+    --brand-300: #caf890;
+    --brand-400: #b8f66b;
+    --brand-500: #b8f66b;
+    --brand-600: #a9e957;
+    --brand-700: #41681f;
+    --brand-800: #315017;
+    --brand-900: #243b10;
+    --brand: #b8f66b;
+    --brand-hover: #a9e957;
+    --brand-active: #41681f;
+    --brand-foreground: #171717;
     --brand-subtle: var(--brand-50);
     --brand-border: var(--brand-200);
 }
@@ -134,10 +129,9 @@ select:focus[data-flux-control] {
     .dot-grid { background-image: radial-gradient(#d9ddd5 1.5px, transparent 1.5px); background-size: 28px 28px; }
     .skip-link { @apply fixed top-3 left-3 z-50 -translate-y-24 rounded-lg bg-zinc-950 px-5 py-3 text-sm text-white focus:translate-y-0; }
     .workspace-main { @apply min-w-0 !p-5 sm:!p-8 xl:!p-10; }
-    .workspace-sidebar { @apply !w-60 border-e border-zinc-200/70 !bg-white lg:!h-screen lg:!overflow-hidden; }
+    .workspace-sidebar { @apply !w-60 !overflow-y-hidden border-e border-zinc-200/70 !bg-white lg:!h-screen; }
     .workspace-nav { @apply flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-950; }
     .workspace-nav[aria-current=page] { background: var(--brand-subtle); color: var(--brand-active); font-weight: 500; }
-    .auth-surface { --brand: #b8f66b; --brand-hover: #a9e957; --brand-foreground: #171717; }
     .settings-card { @apply rounded-2xl border border-zinc-200 bg-white p-5 sm:p-8; }
     .feature-icon { transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1); }
     .reveal-card:hover .feature-icon { transform: rotate(-5deg) scale(1.08); }
@@ -199,7 +193,7 @@ select:focus[data-flux-control] {
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
-/* Flux overrides so dashboard controls follow the organization's colour. */
+/* Flux primary controls use the same Startsuite accent on every surface. */
 [data-flux-button][data-variant='primary'] {
     background-color: var(--brand) !important;
     color: var(--brand-foreground) !important;

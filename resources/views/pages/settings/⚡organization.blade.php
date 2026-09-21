@@ -1,7 +1,5 @@
 <?php
 
-use App\Rules\ReadableThemeColor;
-use App\Support\Color;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -14,8 +12,6 @@ new #[Title('Organization settings')] class extends Component {
     use WithFileUploads;
 
     public string $name = '';
-
-    public string $primaryColor = '';
 
     public $logo = null;
 
@@ -31,29 +27,6 @@ new #[Title('Organization settings')] class extends Component {
         $organization = Auth::user()->organization;
 
         $this->name = $organization->name;
-        $this->primaryColor = $organization->primary_color;
-    }
-
-    /**
-     * Get the theme swatches.
-     *
-     * @return array<int, array{label: string, value: string}>
-     */
-    #[Computed]
-    public function presets(): array
-    {
-        return config('startsuite.theme_presets');
-    }
-
-    /**
-     * Get the colour used by the preview panel.
-     */
-    #[Computed]
-    public function previewColor(): string
-    {
-        return Color::isValidHex($this->primaryColor)
-            ? Color::normalize($this->primaryColor)
-            : config('startsuite.default_organization_color');
     }
 
     /**
@@ -93,7 +66,6 @@ new #[Title('Organization settings')] class extends Component {
 
         $validated = $this->validate([
             'name' => ['required', 'string', 'min:2', 'max:255'],
-            'primaryColor' => ['required', 'string', new ReadableThemeColor],
             'logo' => [
                 'nullable',
                 'image',
@@ -102,10 +74,7 @@ new #[Title('Organization settings')] class extends Component {
             ],
         ]);
 
-        $attributes = [
-            'name' => $validated['name'],
-            'primary_color' => Color::normalize($validated['primaryColor']),
-        ];
+        $attributes = ['name' => $validated['name']];
 
         if ($this->logo) {
             $this->deleteExistingLogo($organization->logo_path);
@@ -157,7 +126,7 @@ new #[Title('Organization settings')] class extends Component {
 
     <x-pages::settings.layout
         :heading="__('Organization')"
-        :subheading="__('Your company name, logo and theme colour')"
+        :subheading="__('Your company name and logo')"
         :wide="true"
     >
         <div class="grid gap-8 lg:grid-cols-2">
@@ -204,45 +173,6 @@ new #[Title('Organization settings')] class extends Component {
                     <flux:error name="logo" />
                 </flux:field>
 
-                <flux:field>
-                    <flux:label>{{ __('Theme colour') }}</flux:label>
-
-                    <div class="flex flex-wrap gap-2" role="group" aria-label="{{ __('Preset colours') }}">
-                        @foreach ($this->presets as $preset)
-                            <button
-                                type="button"
-                                wire:click="$set('primaryColor', '{{ $preset['value'] }}')"
-                                title="{{ $preset['label'] }}"
-                                aria-label="{{ $preset['label'] }}"
-                                @class([
-                                    'size-9 rounded-full ring-offset-2 transition-transform hover:scale-110',
-                                    'ring-2 ring-black' => strtolower($this->previewColor) === strtolower($preset['value']),
-                                ])
-                                style="background: {{ $preset['value'] }}"
-                            ></button>
-                        @endforeach
-                    </div>
-
-                    <div class="mt-3 flex items-center gap-3">
-                        <input
-                            type="color"
-                            wire:model.live="primaryColor"
-                            aria-label="{{ __('Custom colour') }}"
-                            class="h-11 w-14 cursor-pointer rounded-xl border-0 bg-black/4 p-1"
-                        />
-
-                        <flux:input
-                            wire:model.blur="primaryColor"
-                            class="max-w-[10rem] font-mono"
-                            placeholder="#1d4ed8"
-                            aria-label="{{ __('Hex colour value') }}"
-                            data-test="color-input"
-                        />
-                    </div>
-
-                    <flux:error name="primaryColor" />
-                </flux:field>
-
                 <button
                     type="submit"
                     data-test="save-organization"
@@ -264,7 +194,6 @@ new #[Title('Organization settings')] class extends Component {
                 <div class="mt-4 rounded-2xl bg-black/4 p-2">
                     <x-organization-preview
                         :name="trim($name) !== '' ? $name : __('Your company')"
-                        :color="$this->previewColor"
                         :logo-url="$this->previewLogoUrl"
                         class="!rounded-xl !border-black/8"
                     />

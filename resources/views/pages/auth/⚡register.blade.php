@@ -2,8 +2,6 @@
 
 use App\Actions\Organizations\RegisterOrganization;
 use App\Concerns\PasswordValidationRules;
-use App\Rules\ReadableThemeColor;
-use App\Support\Color;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
@@ -19,8 +17,6 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
 
     public string $organizationName = '';
 
-    public string $primaryColor = '';
-
     public $logo = null;
 
     public string $name = '';
@@ -30,36 +26,6 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
     public string $password = '';
 
     public string $password_confirmation = '';
-
-    /**
-     * Mount the component.
-     */
-    public function mount(): void
-    {
-        $this->primaryColor = config('startsuite.default_organization_color');
-    }
-
-    /**
-     * Get the theme swatches offered alongside the custom picker.
-     *
-     * @return array<int, array{label: string, value: string}>
-     */
-    #[Computed]
-    public function presets(): array
-    {
-        return config('startsuite.theme_presets');
-    }
-
-    /**
-     * Get the preview colour, falling back while the input is incomplete.
-     */
-    #[Computed]
-    public function previewColor(): string
-    {
-        return Color::isValidHex($this->primaryColor)
-            ? Color::normalize($this->primaryColor)
-            : config('startsuite.default_organization_color');
-    }
 
     /**
      * Get the company name shown in the preview.
@@ -97,7 +63,6 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
         $user = $registerOrganization->handle(
             organizationAttributes: [
                 'name' => $validated['organizationName'],
-                'primary_color' => $validated['primaryColor'],
                 'logo_path' => $logoPath ?: null,
             ],
             adminAttributes: [
@@ -125,7 +90,6 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
     {
         return [
             'organizationName' => ['required', 'string', 'min:2', 'max:255'],
-            'primaryColor' => ['required', 'string', new ReadableThemeColor],
             'logo' => [
                 'nullable',
                 'image',
@@ -226,44 +190,6 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
                     <flux:error name="logo" />
                 </flux:field>
 
-                <flux:field>
-                    <flux:label>{{ __('Theme colour') }}</flux:label>
-
-                    <div class="flex flex-wrap gap-2" role="group" aria-label="{{ __('Preset colours') }}">
-                        @foreach ($this->presets as $preset)
-                            <button
-                                type="button"
-                                wire:click="$set('primaryColor', '{{ $preset['value'] }}')"
-                                title="{{ $preset['label'] }}"
-                                aria-label="{{ $preset['label'] }}"
-                                @class([
-                                    'size-9 rounded-full ring-offset-2 transition-transform hover:scale-110',
-                                    'ring-2 ring-black' => strtolower($this->previewColor) === strtolower($preset['value']),
-                                ])
-                                style="background: {{ $preset['value'] }}"
-                            ></button>
-                        @endforeach
-                    </div>
-
-                    <div class="mt-3 flex items-center gap-3">
-                        <input
-                            type="color"
-                            wire:model.live="primaryColor"
-                            aria-label="{{ __('Custom colour') }}"
-                            class="h-11 w-14 cursor-pointer rounded-xl border-0 bg-black/4 p-1"
-                        />
-
-                        <flux:input
-                            wire:model.blur="primaryColor"
-                            class="max-w-[10rem] font-mono"
-                            placeholder="#1d4ed8"
-                            aria-label="{{ __('Hex colour value') }}"
-                            data-test="color-input"
-                        />
-                    </div>
-
-                    <flux:error name="primaryColor" />
-                </flux:field>
             </fieldset>
 
             {{-- Admin account --}}
@@ -351,7 +277,6 @@ new #[Layout('layouts::auth', ['wide' => true])] #[Title('Register your company'
             <div class="mt-5 rounded-2xl bg-black/4 p-2">
                 <x-organization-preview
                     :name="$this->previewName"
-                    :color="$this->previewColor"
                     :logo-url="$logo?->temporaryUrl()"
                     class="!rounded-xl !border-black/8"
                 />

@@ -24,9 +24,7 @@ class OrganizationFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name).'-'.Str::lower(Str::random(5)),
             'logo_path' => null,
-            'primary_color' => fake()->randomElement([
-                '#1d4ed8', '#0f766e', '#b91c1c', '#7c3aed', '#c2410c',
-            ]),
+            'primary_color' => config('startsuite.brand_color'),
             'is_active' => true,
         ];
     }

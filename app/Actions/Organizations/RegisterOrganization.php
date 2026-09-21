@@ -5,7 +5,6 @@ namespace App\Actions\Organizations;
 use App\Enums\Role;
 use App\Models\Organization;
 use App\Models\User;
-use App\Support\Color;
 use App\Support\Tenancy;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +19,7 @@ class RegisterOrganization
     /**
      * Register the organization and return its first Super Admin.
      *
-     * @param  array{name: string, primary_color: string, logo_path?: string|null}  $organizationAttributes
+     * @param  array{name: string, logo_path?: string|null}  $organizationAttributes
      * @param  array{name: string, email: string, password: string}  $adminAttributes
      */
     public function handle(array $organizationAttributes, array $adminAttributes): User
@@ -29,7 +28,7 @@ class RegisterOrganization
             return Tenancy::withoutScoping(function () use ($organizationAttributes, $adminAttributes): User {
                 $organization = Organization::create([
                     'name' => $organizationAttributes['name'],
-                    'primary_color' => Color::normalize($organizationAttributes['primary_color']),
+                    'primary_color' => config('startsuite.brand_color'),
                     'logo_path' => $organizationAttributes['logo_path'] ?? null,
                     'is_active' => true,
                 ]);

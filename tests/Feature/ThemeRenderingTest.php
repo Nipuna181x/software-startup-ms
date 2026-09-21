@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Organization;
 use App\Models\User;
-use App\Support\Color;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -39,50 +38,17 @@ class ThemeRenderingTest extends TestCase
         );
     }
 
-    public function test_a_light_theme_colour_gets_dark_button_text(): void
+    public function test_the_workspace_ignores_legacy_organization_colours(): void
     {
-        $organization = Organization::factory()->create(['primary_color' => '#fbbf24']);
+        $organization = Organization::factory()->create(['primary_color' => '#ff00ff']);
         $user = User::factory()->superAdmin()->for($organization)->create();
 
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('--brand-foreground:#111827', escape: false);
-    }
-
-    public function test_a_dark_theme_colour_gets_white_button_text(): void
-    {
-        $organization = Organization::factory()->create(['primary_color' => '#1d4ed8']);
-        $user = User::factory()->superAdmin()->for($organization)->create();
-
-        $this->actingAs($user)
-            ->get(route('dashboard'))
-            ->assertOk()
-            ->assertSee('--brand-foreground:#ffffff', escape: false);
-    }
-
-    public function test_invalid_stored_brand_colors_fall_back_to_a_readable_theme(): void
-    {
-        $organization = Organization::factory()->create(['primary_color' => '#']);
-        $user = User::factory()->superAdmin()->for($organization)->create();
-        config(['startsuite.default_organization_color' => '#1d4ed8']);
-
-        $this->actingAs($user)->get(route('users.index'))
-            ->assertOk()
-            ->assertSee('--brand:#1d4ed8;', escape: false)
-            ->assertSee('--brand-foreground:#ffffff', escape: false);
-    }
-
-    public function test_the_full_shade_ramp_is_emitted(): void
-    {
-        $organization = Organization::factory()->create(['primary_color' => '#0f766e']);
-        $user = User::factory()->superAdmin()->for($organization)->create();
-
-        $response = $this->actingAs($user)->get(route('dashboard'))->assertOk();
-
-        foreach (Color::ramp('#0f766e') as $step => $value) {
-            $response->assertSee("--brand-{$step}:{$value}", escape: false);
-        }
+            ->assertDontSee('#ff00ff')
+            ->assertDontSee('style="--brand', escape: false)
+            ->assertDontSee('Good work starts here.');
     }
 
     public function test_the_sidebar_shows_initials_when_there_is_no_logo(): void

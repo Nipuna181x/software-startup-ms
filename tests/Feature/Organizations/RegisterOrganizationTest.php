@@ -9,7 +9,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class RegisterOrganizationTest extends TestCase
@@ -20,14 +19,15 @@ class RegisterOrganizationTest extends TestCase
     {
         $this->get(route('register'))
             ->assertOk()
-            ->assertSee('Register your company');
+            ->assertSee('Register your company')
+            ->assertDontSee('Theme colour')
+            ->assertDontSee('data-test="color-input"', escape: false);
     }
 
     public function test_it_creates_the_organization_and_its_first_super_admin(): void
     {
         Livewire::test('pages::auth.register')
             ->set('organizationName', 'Northwind Logistics')
-            ->set('primaryColor', '#0f766e')
             ->set('name', 'Amara Osei')
             ->set('email', 'amara@northwind.test')
             ->set('password', 'secret-password')
@@ -40,7 +40,7 @@ class RegisterOrganizationTest extends TestCase
 
         $this->assertNotNull($organization);
         $this->assertSame('northwind-logistics', $organization->slug);
-        $this->assertSame('#0f766e', $organization->primary_color);
+        $this->assertSame(config('startsuite.brand_color'), $organization->primary_color);
         $this->assertTrue($organization->is_active);
 
         $admin = User::withoutGlobalScopes()->firstWhere('email', 'amara@northwind.test');
@@ -60,7 +60,6 @@ class RegisterOrganizationTest extends TestCase
 
         Livewire::test('pages::auth.register')
             ->set('organizationName', 'Halden and Rowe')
-            ->set('primaryColor', '#b91c1c')
             ->set('logo', UploadedFile::fake()->image('logo.png', 320, 320))
             ->set('name', 'Tom Beckett')
             ->set('email', 'tom@halden.test')
@@ -81,7 +80,6 @@ class RegisterOrganizationTest extends TestCase
 
         Livewire::test('pages::auth.register')
             ->set('organizationName', 'Meridian Labs')
-            ->set('primaryColor', '#4338ca')
             ->set('logo', UploadedFile::fake()->create('logo.svg', 10, 'image/svg+xml'))
             ->set('name', 'Priya Raman')
             ->set('email', 'priya@meridian.test')
@@ -102,41 +100,12 @@ class RegisterOrganizationTest extends TestCase
             ->assertHasErrors('logo');
     }
 
-    /**
-     * @return array<string, array{string}>
-     */
-    public static function unreadableColors(): array
-    {
-        return [
-            'white' => ['#ffffff'],
-            'near white' => ['#fdfdfb'],
-            'not a colour' => ['chartreuse'],
-        ];
-    }
-
-    #[DataProvider('unreadableColors')]
-    public function test_it_rejects_theme_colors_that_cannot_be_read_on_white(string $color): void
-    {
-        Livewire::test('pages::auth.register')
-            ->set('organizationName', 'Pale Company')
-            ->set('primaryColor', $color)
-            ->set('name', 'Lukas Vogel')
-            ->set('email', 'lukas@pale.test')
-            ->set('password', 'secret-password')
-            ->set('password_confirmation', 'secret-password')
-            ->call('register')
-            ->assertHasErrors('primaryColor');
-
-        $this->assertDatabaseMissing('organizations', ['name' => 'Pale Company']);
-    }
-
     public function test_it_requires_a_unique_email_across_the_whole_platform(): void
     {
         $existing = User::factory()->create(['email' => 'taken@example.test']);
 
         Livewire::test('pages::auth.register')
             ->set('organizationName', 'Second Company')
-            ->set('primaryColor', '#1d4ed8')
             ->set('name', 'Someone Else')
             ->set('email', 'taken@example.test')
             ->set('password', 'secret-password')
@@ -152,7 +121,6 @@ class RegisterOrganizationTest extends TestCase
     {
         Livewire::test('pages::auth.register')
             ->set('organizationName', 'Mismatch Ltd')
-            ->set('primaryColor', '#1d4ed8')
             ->set('name', 'Someone')
             ->set('email', 'someone@mismatch.test')
             ->set('password', 'secret-password')
@@ -169,7 +137,6 @@ class RegisterOrganizationTest extends TestCase
 
         Livewire::test('pages::auth.register')
             ->set('organizationName', 'Duplicate Co')
-            ->set('primaryColor', '#1d4ed8')
             ->set('name', 'Second Owner')
             ->set('email', 'second@duplicate.test')
             ->set('password', 'secret-password')

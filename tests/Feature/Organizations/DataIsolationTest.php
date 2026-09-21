@@ -143,7 +143,6 @@ class DataIsolationTest extends TestCase
         Livewire::actingAs($this->adminA)
             ->test('pages::settings.organization')
             ->set('name', 'Renamed By Alpha')
-            ->set('primaryColor', '#1d4ed8')
             ->call('save')
             ->assertHasNoErrors();
 

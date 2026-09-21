@@ -1,22 +1,15 @@
 @props([
     'name' => 'Your company',
-    'color' => '#1d4ed8',
     'logoUrl' => null,
 ])
 
 @php
-    use App\Support\Color;
     use Illuminate\Support\Str;
 
-    $ramp = Color::ramp($color);
-    $foreground = Color::foregroundFor($ramp['500']);
     $initials = Str::initials($name, true);
 @endphp
 
-<div
-    {{ $attributes->class(['overflow-hidden rounded-xl border border-black/8 bg-white']) }}
-    style="--p-500:{{ $ramp['500'] }};--p-600:{{ $ramp['600'] }};--p-50:{{ $ramp['50'] }};--p-100:{{ $ramp['100'] }};--p-fg:{{ $foreground }}"
->
+<div {{ $attributes->class(['overflow-hidden rounded-xl border border-black/8 bg-white']) }}>
     <div class="flex min-h-[260px]">
         {{-- Sidebar --}}
         <div class="flex w-[45%] shrink-0 flex-col border-e border-black/6 bg-black/[0.03] p-3">
@@ -28,10 +21,7 @@
                         class="size-7 shrink-0 rounded object-cover"
                     />
                 @else
-                    <span
-                        class="grid size-7 shrink-0 place-items-center rounded text-[10px] font-semibold"
-                        style="background:var(--p-500);color:var(--p-fg)"
-                    >{{ $initials }}</span>
+                    <span class="grid size-7 shrink-0 place-items-center rounded bg-brand text-[10px] font-semibold text-brand-foreground">{{ $initials }}</span>
                 @endif
 
                 <span class="truncate text-[13px] font-semibold tracking-tight text-black/85">
@@ -43,18 +33,19 @@
 
             <div class="mt-5 space-y-1">
                 @foreach (['Dashboard', 'Users', 'Settings'] as $index => $item)
-                    <div
-                        class="flex items-center gap-2 rounded px-2 py-1.5"
-                        @if ($index === 0) style="background:var(--p-100)" @endif
-                    >
+                    <div @class([
+                        'flex items-center gap-2 rounded px-2 py-1.5',
+                        'bg-brand-subtle' => $index === 0,
+                    ])>
                         <span
                             class="size-2.5 rounded-[3px]"
-                            style="background:{{ $index === 0 ? 'var(--p-500)' : '#d4d4d8' }}"
+                            style="background:{{ $index === 0 ? 'var(--brand)' : '#d4d4d8' }}"
                         ></span>
-                        <span
-                            class="text-[10px] {{ $index === 0 ? 'font-semibold' : 'text-black/50' }}"
-                            @if ($index === 0) style="color:var(--p-600)" @endif
-                        >{{ $item }}</span>
+                        <span @class([
+                            'text-[10px]',
+                            'font-semibold text-brand-active' => $index === 0,
+                            'text-black/50' => $index !== 0,
+                        ])>{{ $item }}</span>
                     </div>
                 @endforeach
             </div>
@@ -69,7 +60,7 @@
             <div class="mt-3 grid grid-cols-2 gap-2">
                 <div class="rounded border border-black/8 p-2">
                     <div class="text-[8px] text-black/40">{{ __('Team members') }}</div>
-                    <div class="mt-0.5 text-[14px] font-semibold" style="color:var(--p-600)">1</div>
+                    <div class="mt-0.5 text-[14px] font-semibold text-brand-active">1</div>
                 </div>
                 <div class="rounded border border-black/8 p-2">
                     <div class="text-[8px] text-black/40">{{ __('Super Admins') }}</div>
@@ -77,10 +68,7 @@
                 </div>
             </div>
 
-            <div
-                class="mt-3 w-fit rounded px-2.5 py-1 text-[9px] font-medium"
-                style="background:var(--p-500);color:var(--p-fg)"
-            >{{ __('Add user') }}</div>
+            <div class="mt-3 w-fit rounded bg-brand px-2.5 py-1 text-[9px] font-medium text-brand-foreground">{{ __('Add user') }}</div>
 
             <div class="mt-3 space-y-1.5">
                 @foreach ([70, 52, 61] as $width)

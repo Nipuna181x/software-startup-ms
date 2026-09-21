@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Support\Color;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -93,34 +92,6 @@ class Organization extends Model
         return Str::length($initials) > 1
             ? Str::substr($initials, 0, 1).Str::substr($initials, -1)
             : $initials;
-    }
-
-    /**
-     * Build the CSS custom properties for this organization's theme.
-     *
-     * @return array<string, string>
-     */
-    public function themeVariables(): array
-    {
-        $color = Color::isValidHex($this->primary_color)
-            ? $this->primary_color
-            : config('startsuite.default_organization_color');
-        $ramp = Color::ramp($color);
-
-        $variables = [];
-
-        foreach ($ramp as $step => $value) {
-            $variables['--brand-'.$step] = $value;
-        }
-
-        $variables['--brand'] = $ramp[500];
-        $variables['--brand-hover'] = $ramp[600];
-        $variables['--brand-active'] = $ramp[700];
-        $variables['--brand-foreground'] = Color::foregroundFor($ramp[500]);
-        $variables['--brand-subtle'] = $ramp[50];
-        $variables['--brand-border'] = $ramp[200];
-
-        return $variables;
     }
 
     /**

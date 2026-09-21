@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>@include('partials.head')</head>
-<body class="min-h-screen bg-[#fafbf9] text-zinc-950 antialiased" style="{{ $themeStyle ?? '' }}">
+<body class="min-h-screen bg-[#fafbf9] text-zinc-950 antialiased">
     <a href="#main-content" class="skip-link">Skip to content</a>
     <flux:sidebar sticky collapsible="mobile" class="workspace-sidebar">
         <flux:sidebar.header class="!px-4 !pt-6 !pb-5">
