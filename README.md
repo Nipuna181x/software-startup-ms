@@ -230,6 +230,88 @@ are in the same file.
 
 ---
 
+## Calling module
+
+The first business module built on the tenancy foundation above: organizing
+outbound calls to businesses, grouped by category and business type.
+
+### Tables
+
+```
+call_categories         Top-level groups, e.g. "Marketing Agencies"
+call_business_types     Types within a category, e.g. "Phone Shops"
+businesses              Name, address, owner, website, notes
+business_phones         One or more numbers per business, one marked primary
+business_screenshots    Paths on the private disk (never the public one)
+calls                   One row per call attempt — never updated, only added to
+```
+
+Every table uses `BelongsToOrganization`, the same trait every other module
+model uses, so the existing global scope isolates them automatically. A
+business belongs to one business type; a business type belongs to one
+category. There is no separate `organization_id` join required anywhere —
+each table carries its own, stamped on create.
+
+### Sidebar and routing
+
+Calling registers itself in `AppServiceProvider::configureNavigation()` with
+one `Navigation::register()` call, exactly like Users and Settings — no
+layout changes were needed. Routes live in `routes/calling.php` and nest three
+levels deep (`categories/{category}/types/{type}/businesses/{business}`) with
+`Route::scopeBindings()`, so a business type's slug is only ever resolved
+under its real parent category; swapping in a sibling's slug 404s rather than
+silently resolving.
+
+### Call outcomes
+
+`App\Enums\Calling\CallOutcome` (`NotAnswered`, `Pending`, `Interested`,
+`Rejected`) is a plain PHP enum, matching how `Role` is modelled — outcomes
+are a fixed, developer-defined list, not something an organization configures
+for itself. Adding a new outcome later means adding a case and a label/color,
+no schema change.
+
+A business's current status is derived, not stored: `Business::currentStatus()`
+reads the most recent call whose outcome is not `NotAnswered`
+(`Business::latestAnsweredCall()`, a "latest of many" relation scoped to
+answered outcomes). Nothing is ever overwritten — changing a business's status
+later just adds another row to `calls`, and the full history is always
+available on the business's page, newest first.
+
+### Screenshots
+
+Stored on the **private** `local` disk (`storage/app/private`), not the
+public disk used for the organization logo, since a screenshot may show a
+business's private contact details. `BusinessScreenshotController` is the
+only way to read one: it authorizes against the screenshot's business before
+streaming the file, so a screenshot id from another organization 404s and a
+guest is redirected to log in.
+
+### Duplicate phone detection
+
+`App\Support\PhoneNumber::normalize()` strips spaces, dashes and a leading
+`+94` or `0`, so `"+94 71 234 5678"`, `"0712345678"` and `"71-234-5678"` all
+compare equal. `Business::findByPhoneNumber()` checks this against the
+current organization only (via the existing global scope) and is used to
+warn — not block — when a phone number entered on the business form already
+belongs to another business.
+
+### Permissions
+
+Any organization member can view categories/types/businesses, add and edit
+businesses, and log calls. Only a Super Admin can manage categories and
+business types, or delete a business. `CallCategoryPolicy`,
+`CallBusinessTypePolicy`, `BusinessPolicy` and `CallPolicy` enforce this the
+same way `UserPolicy` does — re-checking organization membership
+independently of the global scope. Deleting a category or business type is
+blocked while it still contains children, rather than cascading.
+
+### Demo data
+
+`CallingDemoSeeder` seeds the categories, business types and a few
+businesses with fake Sri Lankan-format numbers described above, for the demo
+organization only. It skips entirely if the demo organization does not
+exist yet.
+
 ## Structure
 
 ```
@@ -274,7 +356,9 @@ whose organization is inactive, are refused with a message naming which applies
 
 ## Test coverage
 
-78 tests covering organization registration (including logo rules and colour
+174 tests covering organization registration (including logo rules and colour
 contrast), login with inactive users and organizations, role authorization,
-last-Super-Admin protection, theme rendering, and cross-organization data
-isolation by guessed IDs and URLs.
+last-Super-Admin protection, theme rendering, cross-organization data
+isolation by guessed IDs and URLs, and the Calling module (category/type/
+business permissions, duplicate phone detection, screenshot isolation and
+the full call outcome workflow).
